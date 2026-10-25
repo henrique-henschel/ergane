@@ -132,3 +132,5 @@ Você não está em `apps/api`. Rode `cd apps/api` antes.
 
 **`release version 21 not supported`**
 O seu Java é mais antigo que o 21. Instale o JDK 21 (tabela de pré-requisitos).
+
+Para mais comandos do Docker (backup, resetar, problemas), veja [docs/docker.md](../../docs/docker.md).
