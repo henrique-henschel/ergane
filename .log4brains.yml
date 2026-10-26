@@ -1,0 +1,5 @@
+project:
+  name: ergane
+  tz: America/Sao_Paulo
+  adrFolder: ./docs/adr
+  packages: []
