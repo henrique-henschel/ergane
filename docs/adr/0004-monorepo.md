@@ -1,0 +1,22 @@
+# ADR-0004: Monorepo
+- Status: Aceita
+- Data: 2026-11-02
+
+## Contexto
+O projeto Ergane compreende múltiplos componentes interdependentes: uma API back-end em Spring Boot (`apps/api/`), um aplicativo móvel em React Native (`apps/mobile/`), uma interface web em React (`apps/web/`), além de especificações de contratos e documentação detalhada de requisitos (casos de uso UC01 a UC35, regras de negócio e diagramas). Mudanças nas regras de negócio e nos contratos de API impactam diretamente os clientes web e mobile. Manter repositórios separados para cada aplicação exigiria coordenação complexa de sincronização, versionamento cruzado de dependências e múltiplos Pull Requests para uma única entrega funcional.
+
+## Decisão
+Adotar uma arquitetura de monorepo (*monorepository*), concentrando todas as aplicações, documentações, contratos e infraestrutura em um único repositório Git.
+
+A estrutura é organizada com as seguintes diretrizes:
+- Aplicações isoladas em pastas próprias dentro de `apps/`: `apps/api/` (back-end Spring Boot), `apps/mobile/` (front-end móvel Expo/React Native) e `apps/web/` (front-end web React);
+- Centralização de contratos (`contracts/`), scripts de infraestrutura (`docker-compose.yml`, `infra/`) e documentação oficial (`docs/`) na raiz do repositório, garantindo uma única fonte da verdade para o projeto;
+- Mudanças de contrato na API e suas respectivas adaptações nos front-ends podem ser submetidas de forma atômica no mesmo commit ou Pull Request;
+- Fluxo de trabalho baseado na branch `main` protegida, com padronização de commits (Conventional Commits) e alterações integradas via Pull Requests com revisão de código entre os membros da equipe.
+
+## Alternativas consideradas
+- **Repositórios separados (Polyrepo - um repositório por aplicação):** isolaria o ciclo de build de cada frente, mas criaria grande atrito no desenvolvimento do MVP acadêmico. Exigiria gerenciar múltiplos repositórios Git, múltiplos fluxos de PR para a mesma funcionalidade, aumentaria o risco de dessincronização de contratos e dificultaria a execução do projeto completo de forma integrada pelos membros da equipe.
+
+## Consequências
+- **Ganhos:** fonte única da verdade para requisitos, contratos OpenAPI e documentação; possibilidade de alterações atômicas que abrangem API e clientes em um único PR; facilidade de navegação e compartilhamento de conhecimento entre todos os integrantes da equipe; simplificação do gerenciamento de tarefas no repositório.
+- **Custos e limitações:** maior tamanho do repositório Git; convivência de diferentes ferramentas de gerenciamento de dependências e compilação (Maven para Java e npm/Node.js para front-ends); necessidade de rigor nos padrões de mensagens e escopos de commits para evitar poluição do histórico.

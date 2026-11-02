@@ -1,35 +1,27 @@
-# Architecture Decision Records
+# Architecture Decision Records (ADRs) - Ergane
 
-ADRs are automatically published to our Log4brains architecture knowledge base:
+Registro das decisões arquiteturais e técnicas fundamentais que orientam o desenvolvimento do monorepo Ergane.
 
-🔗 **<http://INSERT-YOUR-LOG4BRAINS-URL>**
+## Índice de Decisões
 
-Please use this link to browse them.
+| Número | Título | Status | Documento |
+| :---: | :--- | :---: | :--- |
+| **0001** | Java 21 + Spring Boot como back-end | Aceita | [ADR-0001](0001-java-21-spring-boot-como-back-end.md) |
+| **0002** | PostgreSQL como banco de dados | Aceita | [ADR-0002](0002-postgresql-como-banco-de-dados.md) |
+| **0003** | Monólito modular organizado por funcionalidade | Aceita | [ADR-0003](0003-monolito-modular-organizado-por-funcionalidade.md) |
+| **0004** | Monorepo | Aceita | [ADR-0004](0004-monorepo.md) |
+| **0005** | Migrations versionadas com Flyway | Aceita | [ADR-0005](0005-migrations-versionadas-com-flyway.md) |
+| **0006** | UUID como chave primária única | Aceita | [ADR-0006](0006-uuid-como-chave-primaria-unica.md) |
+| **0007** | Isolamento por negócio (multi-tenant) | Aceita | [ADR-0007](0007-isolamento-por-negocio-multi-tenant.md) |
+| **0008** | Representação de dinheiro | Aceita | [ADR-0008](0008-representacao-de-dinheiro.md) |
+| **0009** | Política de exclusão e histórico | Aceita | [ADR-0009](0009-politica-de-exclusao-e-historico.md) |
+| **0010** | Contrato da API REST | Aceita | [ADR-0010](0010-contrato-da-api-rest.md) |
 
-## Development
+---
 
-If not already done, install Log4brains:
-
-```bash
-npm install -g log4brains
-```
-
-To preview the knowledge base locally, run:
-
-```bash
-log4brains preview
-```
-
-In preview mode, the Hot Reload feature is enabled: any change you make to a markdown file is applied live in the UI.
-
-To create a new ADR interactively, run:
-
-```bash
-log4brains adr new
-```
-
-## More information
-
-- [Log4brains documentation](https://github.com/thomvaill/log4brains/tree/develop#readme)
-- [What is an ADR and why should you use them](https://github.com/thomvaill/log4brains/tree/develop#-what-is-an-adr-and-why-should-you-use-them)
-- [ADR GitHub organization](https://adr.github.io/)
+### Formato e Padrão
+As ADRs deste projeto seguem o modelo clássico de Michael Nygard estruturado em:
+- **Contexto:** o problema e as restrições que motivaram a decisão.
+- **Decisão:** o direcionamento técnico objetivo e seus detalhes práticos de implementação.
+- **Alternativas consideradas:** opções avaliadas e os motivos de não terem sido adotadas.
+- **Consequências:** ganhos obtidos, limitações assumidas e itens postergados.
