@@ -20,11 +20,11 @@ public record ProdutoRequest(
 
         @NotNull(message = "Erro! O preço é obrigatório.")
         @DecimalMin(value = "0.00", message = "Erro! O preço não pode ser negativo.")
-        @Digits(integer = 10, fraction = 2, message = "Erro! Preço inválido: no máximo 2 casas decimais.")
+        @Digits(integer = 10, fraction = 2, message = "Erro! Preço inválido: até 10 dígitos inteiros e 2 casas decimais.")
         BigDecimal preco,
 
         @DecimalMin(value = "0.00", message = "Erro! O custo não pode ser negativo.")
-        @Digits(integer = 10, fraction = 2, message = "Erro! Custo inválido: no máximo 2 casas decimais.")
+        @Digits(integer = 10, fraction = 2, message = "Erro! Custo inválido: até 10 dígitos inteiros e 2 casas decimais.")
         BigDecimal custo,
 
         LocalDate validade,

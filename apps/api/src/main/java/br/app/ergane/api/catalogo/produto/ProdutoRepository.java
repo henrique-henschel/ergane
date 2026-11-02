@@ -19,7 +19,7 @@ interface ProdutoRepository extends JpaRepository<Produto, UUID> {
               and (:categoriaId is null or p.categoriaId = :categoriaId)
               and (:semCategoria = false or p.categoriaId is null)
               and (:incluirArquivados = true or p.arquivadoEm is null)
-            order by lower(p.nome), p.diferenciador
+            order by lower(p.nome), p.diferenciador, p.id
             """)
     List<Produto> buscarComFiltros(@Param("negocioId") UUID negocioId,
                                    @Param("padraoNome") String padraoNome,

@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Entity
@@ -77,7 +78,7 @@ public class Produto {
 
     public void arquivar() {
         if (arquivadoEm == null) {
-            arquivadoEm = Instant.now();
+            arquivadoEm = Instant.now().truncatedTo(ChronoUnit.MICROS);
         }
     }
 

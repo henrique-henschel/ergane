@@ -64,7 +64,7 @@ public class CategoriaService {
             categoriaRepository.delete(categoria);
             categoriaRepository.flush();
         } catch (DataIntegrityViolationException e) {
-            throw new RegraNegocioException("Erro! A categoria possui produtos vinculados (inclusive arquivados). Remova-a dos produtos antes de excluir.");
+            throw new RegraNegocioException("Erro! A categoria possui produtos vinculados (inclusive arquivados) e não pode ser excluída. Renomeie-a se precisar reaproveitá-la.");
         }
     }
 
