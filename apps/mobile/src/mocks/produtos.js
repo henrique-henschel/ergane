@@ -1,0 +1,53 @@
+
+const produtosIniciais = [
+  {
+    id: 'prod-001',
+    nome: 'Pastel de Carne',
+    categoria: 'Salgado',
+    preco: 8.00,
+    quantidade: 12,
+    controlaEstoque: true,
+    arquivado: false,
+    custo: 3.00,
+    validade: null,
+    descricao: null,
+  },
+  {
+    id: 'prod-002',
+    nome: 'Suco de Laranja',
+    categoria: 'Suco',
+    preco: 7.00,
+    quantidade: null,
+    controlaEstoque: false,
+    arquivado: false,
+    custo: null,
+    validade: null,
+    descricao: null,
+  },
+  {
+    id: 'prod-003',
+    nome: 'Brigadeiro',
+    categoria: 'Doce',
+    preco: 3.50,
+    quantidade: 0,
+    controlaEstoque: true,
+    arquivado: false,
+    custo: null,
+    validade: null,
+    descricao: null,
+  },
+  {
+    id: 'prod-004',
+    nome: 'Água Mineral',
+    categoria: null,
+    preco: 2.50,
+    quantidade: 20,
+    controlaEstoque: true,
+    arquivado: false,
+    custo: 1.00,
+    validade: null,
+    descricao: 'Garrafa de água mineral',
+  },
+];
+
+export default produtosIniciais;

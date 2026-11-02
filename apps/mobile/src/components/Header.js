@@ -17,13 +17,13 @@ export default function Header({
       >
         {modoVoltar ? (
           <Image
-            source={require('../assets/retornar.png')}
+            source={require('../../assets/retornar.png')}
             style={styles.iconeCasa}
             resizeMode="contain"
           />
         ) : (
           <Image
-            source={require('../assets/lar.png')}
+            source={require('../../assets/lar.png')}
             style={styles.iconeCasa}
             resizeMode="contain"
           />
@@ -38,7 +38,7 @@ export default function Header({
           onPress={onNotificationsPress}
         >
           <Image
-            source={require('../assets/notificacao.png')}
+            source={require('../../assets/notificacao.png')}
             style={styles.iconeNotificacao}
             resizeMode="contain"
           />
@@ -49,7 +49,7 @@ export default function Header({
           onPress={onIAPress}
         >
           <Image
-            source={require('../assets/brilhar.png')}
+            source={require('../../assets/brilhar.png')}
             style={styles.iconeIA}
             resizeMode="contain"
           />
