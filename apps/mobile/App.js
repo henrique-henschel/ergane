@@ -2,73 +2,28 @@
 import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 
-import GestaoScreen from './screens/GestaoScreen';
-import CatalogoScreen from './screens/CatalogoScreen';
-import DetalhesScreen from './screens/DetalhesScreen';
+import GestaoScreen from './src/screens/GestaoScreen';
+import CatalogoScreen from './src/screens/CatalogoScreen';
+import DetalhesScreen from './src/screens/DetalhesScreen';
+import Vender from './src/screens/Vender';
+import RevisarVenda from './src/screens/RevisarVenda';
 
-const produtosIniciais = [
-  {
-    id: 'prod-001',
-    nome: 'Pastel de Carne',
-    categoria: 'Salgado',
-    preco: 8.00,
-    quantidade: 12,
-    controlaEstoque: true,
-    arquivado: false,
-    custo: 3.00,
-    validade: null,
-    descricao: null,
-  },
-  {
-    id: 'prod-002',
-    nome: 'Suco de Laranja',
-    categoria: 'Suco',
-    preco: 7.00,
-    quantidade: null,
-    controlaEstoque: false,
-    arquivado: false,
-    custo: null,
-    validade: null,
-    descricao: null,
-  },
-  {
-    id: 'prod-003',
-    nome: 'Brigadeiro',
-    categoria: 'Doce',
-    preco: 3.50,
-    quantidade: 0,
-    controlaEstoque: true,
-    arquivado: false,
-    custo: null,
-    validade: null,
-    descricao: null,
-  },
-  {
-    id: 'prod-004',
-    nome: 'Água Mineral',
-    categoria: null,
-    preco: 2.50,
-    quantidade: 20,
-    controlaEstoque: true,
-    arquivado: false,
-    custo: 1.00,
-    validade: null,
-    descricao: 'Garrafa de água mineral',
-  },
+import produtosIniciais from './src/mocks/produtos';
 
-];
 
 export default function App() {
   const [telaAtual, setTelaAtual] = useState('gestao');
   const [produtos] = useState(produtosIniciais);
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
-
+  
   const [filtros, setFiltros] = useState({
     nome: '',
     categoria: 'Todas',
     disponibilidade: 'Todas',
     pagina: 1,
   });
+
+  const [carrinho, setCarrinho] = useState([]);
 
   function abrirCatalogo() {
     setTelaAtual('catalogo');
@@ -90,6 +45,69 @@ export default function App() {
     setTelaAtual('gestao');
   }
 
+  function adicionarProduto(produto) {
+    setCarrinho((atual) => {
+      const itemExistente = atual.find(
+        (item) => item.produtoId === produto.id
+      );
+
+      if (itemExistente) {
+        return atual.map((item) =>
+          item.produtoId === produto.id
+            ? {
+                ...item,
+                quantidade: item.quantidade + 1,
+              }
+            : item
+        );
+      }
+
+      return [
+        ...atual,
+        {
+          produtoId: produto.id,
+          quantidade: 1,
+        },
+      ];
+    });
+  }
+
+  function removerProduto(produto) {
+    setCarrinho((atual) =>
+      atual.filter((item) => item.produtoId !== produto.id)
+    );
+  }
+
+  function alterarQuantidade(produtoId, novaQuantidade) {
+    setCarrinho((atual) =>
+      atual.map((item) =>
+        item.produtoId === produtoId
+          ? { ...item, quantidade: novaQuantidade }
+          : item
+      )
+    );
+  }
+
+  function removerItemCarrinho(produtoId) {
+    setCarrinho((atual) =>
+      atual.filter((item) => item.produtoId !== produtoId)
+    );
+  }
+
+  function navegarPara(tela) {
+    if (tela === 'gestao') {
+      setTelaAtual('gestao');
+    }
+
+    if (tela === 'vender') {
+      setTelaAtual('vender');
+    }
+  }
+
+  function revisarVenda() {
+    setTelaAtual('revisarVenda');
+  }
+
   return (
     <>
       <StatusBar style="dark" />
@@ -98,6 +116,7 @@ export default function App() {
         <GestaoScreen
           onAbrirCatalogo={abrirCatalogo}
           onVoltarInicio={voltarInicio}
+          onNavegar={navegarPara}
         />
       )}
 
@@ -115,6 +134,27 @@ export default function App() {
         <DetalhesScreen
           produto={produtoSelecionado}
           onVoltar={() => setTelaAtual('catalogo')}
+        />
+      )}
+
+      {telaAtual === 'vender' && (
+        <Vender
+          produtos={produtos}
+          carrinho={carrinho}
+          onAdicionarProduto={adicionarProduto}
+          onRemoverProduto={removerProduto}
+          onRevisarVenda={revisarVenda}
+          onNavegar={navegarPara}
+        />
+      )}
+
+      {telaAtual === 'revisarVenda' && (
+        <RevisarVenda
+          produtos={produtos}
+          carrinho={carrinho}
+          onVoltar={() => setTelaAtual('vender')}
+          onAlterarQuantidade={alterarQuantidade}
+          onRemoverProduto={removerItemCarrinho}
         />
       )}
       

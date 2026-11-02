@@ -5,7 +5,7 @@ import Header from '../components/Header';
 
 import BottomNavigation from '../components/BottomNavigation';
 
-export default function GestaoScreen({ onAbrirCatalogo, onVoltarInicio }) {
+export default function GestaoScreen({ onAbrirCatalogo, onVoltarInicio, onNavegar }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -62,7 +62,7 @@ export default function GestaoScreen({ onAbrirCatalogo, onVoltarInicio }) {
         </View>
       </View>
 
-      <BottomNavigation telaAtiva="gestao" />
+      <BottomNavigation telaAtiva="gestao" onNavegar={onNavegar}/>
     </SafeAreaView>
   );
 }

@@ -10,27 +10,27 @@ import {
 const itens = [
   {
     nome: 'Início',
-    icone: require('../assets/lar.png'),
+    icone: require('../../assets/lar.png'),
     tela: 'inicio',
   },
   {
     nome: 'Pedidos',
-    icone: require('../assets/arquivo.png'),
+    icone: require('../../assets/arquivo.png'),
     tela: 'pedidos',
   },
   {
     nome: 'Vender',
-    icone: require('../assets/saco-de-papel.png'),
+    icone: require('../../assets/saco-de-papel.png'),
     tela: 'vender',
   },
   {
     nome: 'Gestão',
-    icone: require('../assets/caixa.png'),
+    icone: require('../../assets/caixa.png'),
     tela: 'gestao',
   },
   {
     nome: 'Mais',
-    icone: require('../assets/pontos.png'),
+    icone: require('../../assets/pontos.png'),
     tela: 'mais',
   },
 ];
