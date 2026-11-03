@@ -1,0 +1,11 @@
+package br.app.ergane.api.vendas.consulta;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.UUID;
+
+public interface ItemVendaConsultaRepository extends JpaRepository<ItemVenda, UUID> {
+
+    List<ItemVenda> findAllByVenda_IdOrderByIdAsc(UUID vendaId);
+}
