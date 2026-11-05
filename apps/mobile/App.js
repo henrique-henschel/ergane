@@ -127,6 +127,7 @@ export default function App() {
           onAtualizarFiltros={atualizarFiltros}
           onSelecionarProduto={consultarProduto}
           onVoltar={() => setTelaAtual('gestao')}
+          onNavegar={navegarPara}
         />
       )}
 
@@ -143,6 +144,7 @@ export default function App() {
           carrinho={carrinho}
           onAdicionarProduto={adicionarProduto}
           onRemoverProduto={removerProduto}
+          onAlterarQuantidade={alterarQuantidade}
           onRevisarVenda={revisarVenda}
           onNavegar={navegarPara}
         />
@@ -153,8 +155,6 @@ export default function App() {
           produtos={produtos}
           carrinho={carrinho}
           onVoltar={() => setTelaAtual('vender')}
-          onAlterarQuantidade={alterarQuantidade}
-          onRemoverProduto={removerItemCarrinho}
         />
       )}
       

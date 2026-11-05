@@ -22,8 +22,6 @@ export default function RevisarVenda({
   produtos,
   carrinho,
   onVoltar,
-  onAlterarQuantidade,
-  onRemoverProduto,
 }) {
   const [formaPagamento, setFormaPagamento] = useState('');
 
@@ -51,73 +49,37 @@ export default function RevisarVenda({
     0
   );
 
+  // Calcula a quantidade total de unidades.
+  const quantidadeTotal = itensVenda.reduce(
+    (total, item) => total + item.quantidade,
+    0
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.conteudo}
         showsVerticalScrollIndicator={false}
       >
-        <Header onVoltar={onVoltar} modoVoltar={true}/>
+        <Header onVoltar={onVoltar} modoVoltar={true} />
 
         <Text style={styles.titulo}>Revisar venda</Text>
 
         <Text style={styles.subtitulo}>
-          Confira os {itensVenda.length} itens antes de registrar.
+          Confira os {quantidadeTotal} itens antes de registrar.
         </Text>
 
         {/* Produtos da venda */}
         <View style={styles.listaProdutos}>
           {itensVenda.map((item) => (
             <View key={item.id} style={styles.cardProduto}>
-              <View style={styles.informacoesProduto}>
-                <Text style={styles.nomeProduto}>
-                  {item.nome}
-                </Text>
+              <Text style={styles.nomeProduto}>
+                {item.nome}
+              </Text>
 
-                <Text style={styles.precoProduto}>
-                  {item.quantidade} x {formatarPreco(item.preco)}
-                </Text>
-              </View>
-
-              <View style={styles.controlesQuantidade}>
-                <TouchableOpacity
-                  style={styles.botaoQuantidade}
-                  onPress={() => {
-                    if (item.quantidade > 1) {
-                      onAlterarQuantidade(
-                        item.id,
-                        item.quantidade - 1
-                      );
-                    } else {
-                      onRemoverProduto(item.id);
-                    }
-                  }}
-                >
-                  <Text style={styles.textoQuantidade}>−</Text>
-                </TouchableOpacity>
-
-                <Text style={styles.quantidade}>
-                  {item.quantidade}
-                </Text>
-
-                <TouchableOpacity
-                  style={styles.botaoQuantidade}
-                  onPress={() =>
-                    onAlterarQuantidade(
-                      item.id,
-                      item.quantidade + 1
-                    )
-                  }
-                >
-                  <Text style={styles.textoQuantidade}>+</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => onRemoverProduto(item.id)}
-                >
-                  <Text style={styles.remover}>Remover</Text>
-                </TouchableOpacity>
-              </View>
+              <Text style={styles.precoProduto}>
+                {item.quantidade} x {formatarPreco(item.preco)}
+              </Text>
             </View>
           ))}
         </View>
@@ -133,7 +95,7 @@ export default function RevisarVenda({
           </Text>
 
           <Text style={styles.descricaoTotal}>
-            {itensVenda.length} produtos na venda
+            {quantidadeTotal} unidades na venda
           </Text>
         </View>
 
@@ -216,9 +178,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8E9CC',
     borderRadius: 16,
     padding: 14,
-    gap: 12,
-  },
-  informacoesProduto: {
     gap: 6,
   },
   nomeProduto: {
@@ -229,34 +188,6 @@ const styles = StyleSheet.create({
   precoProduto: {
     fontSize: 12,
     color: '#827787',
-  },
-  controlesQuantidade: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  botaoQuantidade: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textoQuantidade: {
-    fontSize: 18,
-    color: '#063D2E',
-    fontWeight: '600',
-  },
-  quantidade: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#402044',
-  },
-  remover: {
-    fontSize: 12,
-    color: '#A13C3C',
-    marginLeft: 'auto',
   },
   cardTotal: {
     backgroundColor: '#063D2E',
