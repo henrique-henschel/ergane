@@ -1,0 +1,55 @@
+name: CI - API
+
+on:
+  pull_request:
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/api-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/api-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  api-verify:
+    name: API - build e testes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: ergane
+          POSTGRES_USER: ergane
+          POSTGRES_PASSWORD: ci_only_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ergane -d ergane"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/ergane
+      SPRING_DATASOURCE_USERNAME: ergane
+      SPRING_DATASOURCE_PASSWORD: ci_only_password
+    steps:
+      - name: Obter codigo
+        uses: actions/checkout@v4
+      - name: Configurar Java 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: apps/api/pom.xml
+      - name: Compilar e executar testes
+        working-directory: apps/api
+        run: |
+          chmod +x ./mvnw
+          ./mvnw --batch-mode --no-transfer-progress verify
