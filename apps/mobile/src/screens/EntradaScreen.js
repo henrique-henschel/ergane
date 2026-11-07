@@ -5,9 +5,14 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
+import {
+  useFonts,
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+} from '@expo-google-fonts/plus-jakarta-sans';
 
 import Header from '../components/Header';
-
 import BottomNavigation from '../components/BottomNavigation';
 
 // Tela temporaria apenas para testar o acesso a UC30 no Expo enquanto a V3/065 nao existe.
@@ -16,6 +21,12 @@ export default function EntradaScreen({
   onVoltarInicio,
   onNavegar,
 }) {
+  const [fontesCarregadas] = useFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+  });
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -25,22 +36,23 @@ export default function EntradaScreen({
           Acesso de desenvolvimento
         </Text>
 
-        <View style={styles.grid}>
-          <TouchableOpacity
-            style={styles.card}
-            onPress={onAbrirCombinacoes}
-          >
-            <Text style={styles.cardTitulo}>
-              Produtos que combinam ›
-            </Text>
+        {fontesCarregadas && (
+          <View style={styles.areaCard}>
+            <TouchableOpacity
+              style={styles.card}
+              onPress={onAbrirCombinacoes}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.cardTitulo}>
+                {'Produtos que\ncombinam ›'}
+              </Text>
 
-            <Text style={styles.cardDescricao}>
-              Descubra combinações com dados suficientes.
-            </Text>
-          </TouchableOpacity>
-
-          <View style={styles.colunaReserva} />
-        </View>
+              <Text style={styles.cardDescricao}>
+                Descubra combinações com dados suficientes.
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <BottomNavigation
@@ -67,33 +79,40 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#341539',
   },
-  grid: {
-    flexDirection: 'row',
-    gap: 12,
+  areaCard: {
     marginTop: 24,
+    alignItems: 'flex-start',
   },
   card: {
-    flex: 1,
-    backgroundColor: '#EEE3F5',
-    borderRadius: 20,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    minHeight: 120,
-    justifyContent: 'space-between',
+    width: 176,
+    maxWidth: '100%',
+    minHeight: 148,
+    flexDirection: 'column',
+    padding: 16,
     gap: 8,
-  },
-  colunaReserva: {
-    flex: 1,
+    borderRadius: 36,
+    backgroundColor: '#EEE3F5',
+    opacity: 1,
+    justifyContent: 'flex-start',
   },
   cardTitulo: {
-    fontSize: 16,
+    width: 144,
+    maxWidth: '100%',
+    minHeight: 48,
+    fontFamily: 'PlusJakartaSans_600SemiBold',
     fontWeight: '600',
+    fontSize: 16,
+    lineHeight: 24,
     color: '#341539',
   },
   cardDescricao: {
+    width: 144,
+    maxWidth: '100%',
+    minHeight: 60,
+    fontFamily: 'PlusJakartaSans_500Medium',
+    fontWeight: '500',
     fontSize: 14,
-    fontWeight: '400',
-    color: '#6C5E74',
+    lineHeight: 20,
+    color: '#655C69',
   },
 });
-

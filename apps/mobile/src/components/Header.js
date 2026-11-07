@@ -1,4 +1,3 @@
-
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 
 export default function Header({
@@ -6,6 +5,7 @@ export default function Header({
   onNotificationsPress,
   onIAPress,
   modoVoltar = false,
+  usarChevronVoltar = false,
 }) {
   return (
     <View style={styles.container}>
@@ -16,11 +16,15 @@ export default function Header({
         onPress={onVoltar}
       >
         {modoVoltar ? (
-          <Image
-            source={require('../../assets/retornar.png')}
-            style={styles.iconeCasa}
-            resizeMode="contain"
-          />
+          usarChevronVoltar ? (
+            <View style={styles.chevronVoltar} />
+          ) : (
+            <Image
+              source={require('../../assets/retornar.png')}
+              style={styles.iconeCasa}
+              resizeMode="contain"
+            />
+          )
         ) : (
           <Image
             source={require('../../assets/lar.png')}
@@ -84,6 +88,15 @@ const styles = StyleSheet.create({
     color: '#063D2E',
     lineHeight: 36,
     marginTop: -3,
+  },
+  chevronVoltar: {
+    width: 10,
+    height: 10,
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: '#053225',
+    transform: [{ rotate: '45deg' }],
+    marginLeft: 3,
   },
   acoesDireita: {
     flexDirection: 'row',
