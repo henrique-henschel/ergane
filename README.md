@@ -87,6 +87,7 @@ ergane/
 ├── scripts/                # Scripts auxiliares
 │
 ├── docker-compose.yml      # Configuração do PostgreSQL
+├── package.json            # Ferramentas de documentação (Log4brains para as ADRs)
 ├── CONTRIBUTING.md         # Convenções internas
 └── README.md
 ```
