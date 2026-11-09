@@ -16,4 +16,6 @@ interface CategoriaRepository extends JpaRepository<Categoria, UUID> {
 
     boolean existsByNegocioIdAndNomeIgnoreCaseAndIdNot(UUID negocioId, String nome, UUID id);
 
+    boolean existsByNegocioIdAndId(UUID negocioId, UUID id);
+
 }
