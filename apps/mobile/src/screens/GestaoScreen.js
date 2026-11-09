@@ -1,11 +1,15 @@
-
 import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView } from 'react-native';
 
 import Header from '../components/Header';
 
 import BottomNavigation from '../components/BottomNavigation';
 
-export default function GestaoScreen({ onAbrirCatalogo, onVoltarInicio, onNavegar }) {
+export default function GestaoScreen({
+  onAbrirCatalogo,
+  onAbrirMetas,
+  onVoltarInicio,
+  onNavegar,
+}) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -51,7 +55,10 @@ export default function GestaoScreen({ onAbrirCatalogo, onVoltarInicio, onNavega
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.card}>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={onAbrirMetas}
+          >
             <Text style={styles.cardTitulo}>
               Metas e planejamento ›
             </Text>
@@ -111,5 +118,4 @@ const styles = StyleSheet.create({
     color: '#6B5D6D',
     marginTop: 6,
   },
-  
 });

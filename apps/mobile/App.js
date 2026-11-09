@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 
@@ -7,6 +6,8 @@ import CatalogoScreen from './src/screens/CatalogoScreen';
 import DetalhesScreen from './src/screens/DetalhesScreen';
 import Vender from './src/screens/Vender';
 import RevisarVenda from './src/screens/RevisarVenda';
+import EntradaScreen from './src/screens/EntradaScreen';
+import CombinacoesScreen from './src/screens/CombinacoesScreen';
 
 import produtosIniciais from './src/mocks/produtos';
 
@@ -27,6 +28,14 @@ export default function App() {
 
   function abrirCatalogo() {
     setTelaAtual('catalogo');
+  }
+
+  function abrirMetas() {
+    setTelaAtual('entrada');
+  }
+
+  function abrirCombinacoes() {
+    setTelaAtual('combinacoes');
   }
 
   function atualizarFiltros(novosFiltros) {
@@ -112,9 +121,18 @@ export default function App() {
     <>
       <StatusBar style="dark" />
 
+      {telaAtual === 'entrada' && (
+        <EntradaScreen
+          onAbrirCombinacoes={abrirCombinacoes}
+          onVoltarInicio={voltarInicio}
+          onNavegar={navegarPara}
+        />
+      )}
+
       {telaAtual === 'gestao' && (
         <GestaoScreen
           onAbrirCatalogo={abrirCatalogo}
+          onAbrirMetas={abrirMetas}
           onVoltarInicio={voltarInicio}
           onNavegar={navegarPara}
         />
@@ -157,7 +175,12 @@ export default function App() {
           onVoltar={() => setTelaAtual('vender')}
         />
       )}
-      
+
+      {telaAtual === 'combinacoes' && (
+        <CombinacoesScreen
+          onVoltar={() => setTelaAtual('entrada')}
+        />
+      )}
     </>
   );
 }
