@@ -15,6 +15,7 @@ export default function CatalogoScreen({
   onAtualizarFiltros,
   onSelecionarProduto,
   onVoltar,
+  onNavegar,
 }) {
   const produtosFiltrados = useMemo(() => {
     return produtos.filter((produto) => {
@@ -283,7 +284,7 @@ export default function CatalogoScreen({
         )}
       </ScrollView>
 
-      <BottomNavigation telaAtiva="gestao" />
+      <BottomNavigation telaAtiva="gestao" onNavegar={onNavegar}/>
     </SafeAreaView>
   );
 }

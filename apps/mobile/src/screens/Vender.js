@@ -6,7 +6,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
+  FlatList,
   SafeAreaView,
   StyleSheet,
 } from 'react-native';
@@ -25,12 +25,12 @@ export default function Vender({
   carrinho,
   onAdicionarProduto,
   onRemoverProduto,
+  onAlterarQuantidade,
   onRevisarVenda,
   onNavegar,
 }) {
   const [busca, setBusca] = useState('');
   const [categoriaAtiva, setCategoriaAtiva] = useState('Todos');
-  const [produtosAdicionados, setProdutosAdicionados] = useState([]);
 
   // Filtra os produtos pelo nome e pela categoria selecionada.
   const produtosFiltrados = useMemo(() => {
@@ -61,9 +61,13 @@ export default function Vender({
     });
   }, [produtos, busca, categoriaAtiva]);
 
-  // Verifica se o produto já está no carrinho.
-  function obterItemCarrinho(produtoId) {
-    return carrinho.find((item) => item.produtoId === produtoId);
+  // Retorna a quantidade de um produto no carrinho.
+  function obterQuantidade(produtoId) {
+    const item = carrinho.find(
+      (item) => item.produtoId === produtoId
+    );
+
+    return item ? item.quantidade : 0;
   }
 
   // Calcula a quantidade total de unidades no carrinho.
@@ -81,7 +85,8 @@ export default function Vender({
     return total + (produto ? produto.preco * item.quantidade : 0);
   }, 0);
 
-  function adicionarProduto(produto) {
+  // Aumenta a quantidade do produto.
+  function aumentarQuantidade(produto) {
     // Não permite adicionar produtos controlados sem estoque.
     if (
       produto.controlaEstoque &&
@@ -94,40 +99,32 @@ export default function Vender({
     onAdicionarProduto(produto);
   }
 
-  // Alterna entre adicionar e desmarcar o produto.
-  function alternarAdicao(produto) {
-    const jaAdicionado = produtosAdicionados.includes(produto.id);
+  // Diminui a quantidade sem permitir valores negativos.
+  function diminuirQuantidade(produto) {
+    const quantidadeAtual = obterQuantidade(produto.id);
 
-    if (jaAdicionado) {
-        onRemoverProduto(produto);
-
-        setProdutosAdicionados((atuais) =>
-        atuais.filter((id) => id !== produto.id)
-        );
-
-        return;
+    if (quantidadeAtual <= 0) {
+      return;
     }
 
-    adicionarProduto(produto);
+    if (quantidadeAtual === 1) {
+      onRemoverProduto(produto);
+      return;
+    }
 
-    setProdutosAdicionados((atuais) => [
-        ...atuais,
-        produto.id,
-    ]);
+    onAlterarQuantidade(produto.id, quantidadeAtual - 1);
   }
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.conteudo}
-        keyboardShouldPersistTaps="handled"
-      >
+  // Cabeçalho da lista: título, pesquisa e filtros.
+  function renderizarCabecalho() {
+    return (
+      <View>
         <Header />
 
         <Text style={styles.titulo}>Vender</Text>
 
         <Text style={styles.subtitulo}>
-          Toque nos produtos para montar a venda.
+          Selecione os produtos e suas quantidades.
         </Text>
 
         <TextInput
@@ -157,69 +154,114 @@ export default function Vender({
             </TouchableOpacity>
           ))}
         </View>
+      </View>
+    );
+  }
 
-        {/* Produtos */}
-        <View style={styles.gradeProdutos}>
-          {produtosFiltrados.map((produto, index) => {
-            const itemCarrinho = obterItemCarrinho(produto.id);
+  // Renderiza cada produto da lista.
+  function renderizarProduto({ item: produto, index }) {
+    const quantidade = obterQuantidade(produto.id);
 
-            const semEstoque =
-              produto.controlaEstoque &&
-              produto.quantidade !== null &&
-              produto.quantidade <= 0;
+    const semEstoque =
+      produto.controlaEstoque &&
+      produto.quantidade !== null &&
+      produto.quantidade <= 0;
 
-            return (
-              <TouchableOpacity
-                key={produto.id}
-                style={[
-                  styles.cardProduto,
-                  index % 2 === 0
-                    ? styles.cardAmarelo
-                    : styles.cardBranco,
-                  produtosAdicionados.includes(produto.id) && styles.cardAdicionado,
-                  semEstoque && styles.cardIndisponivel,
-                ]}
-                disabled={semEstoque}
-                onPress={() => alternarAdicao(produto)}
-              >
-                <Text style={styles.iconeProduto}>
-                  {produto.categoria === 'Salgado'
-                    ? '◈'
-                    : produto.categoria === 'Suco'
-                    ? '♧'
-                    : produto.categoria === 'Doce'
-                    ? '▤'
-                    : '＋'}
-                </Text>
+    return (
+      <View
+        style={[
+          styles.cardProduto,
+          index % 2 === 0
+            ? styles.cardAmarelo
+            : styles.cardBranco,
+          quantidade > 0 && styles.cardAdicionado,
+          semEstoque && styles.cardIndisponivel,
+        ]}
+      >
+        <Text style={styles.iconeProduto}>
+          {produto.categoria === 'Salgado'
+            ? '◈'
+            : produto.categoria === 'Suco'
+            ? '♧'
+            : produto.categoria === 'Doce'
+            ? '▤'
+            : '＋'}
+        </Text>
 
-                <Text style={styles.nomeProduto}>
-                  {produto.nome}
-                </Text>
+        <Text style={styles.nomeProduto}>
+          {produto.nome}
+        </Text>
 
-                <Text style={styles.precoProduto}>
-                  {formatarPreco(produto.preco)}
-                </Text>
+        <Text style={styles.precoProduto}>
+          {formatarPreco(produto.preco)}
+        </Text>
 
-                <Text style={styles.acaoProduto}>
-                  {semEstoque
-                    ? 'Sem estoque'
-                    : produtosAdicionados.includes(produto.id)
-                    ? '✓ Adicionado'
-                    : '+ Adicionar'}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+        {/* Controle de quantidade */}
+        <View style={styles.controleQuantidade}>
+          <TouchableOpacity
+            style={[
+              styles.botaoMenos,
+              quantidade === 0 && styles.botaoDesativado,
+            ]}
+            disabled={quantidade === 0}
+            onPress={() => diminuirQuantidade(produto)}
+          >
+            <Text style={styles.textoBotaoQuantidade}>
+              −
+            </Text>
+          </TouchableOpacity>
+
+          <Text style={styles.numeroQuantidade}>
+            {quantidade}
+          </Text>
+
+          <TouchableOpacity
+            style={[
+              styles.botaoMais,
+              semEstoque && styles.botaoDesativado,
+            ]}
+            disabled={semEstoque}
+            onPress={() => aumentarQuantidade(produto)}
+          >
+            <Text style={styles.textoBotaoQuantidade}>
+              +
+            </Text>
+          </TouchableOpacity>
         </View>
 
-        {produtosFiltrados.length === 0 && (
-          <View style={styles.mensagemVazia}>
-            <Text style={styles.mensagemVaziaTexto}>
-              Nenhum produto encontrado.
-            </Text>
-          </View>
+        {semEstoque && (
+          <Text style={styles.textoSemEstoque}>
+            Sem estoque
+          </Text>
         )}
-      </ScrollView>
+      </View>
+    );
+  }
+
+  // Mensagem exibida quando nenhum produto for encontrado.
+  function renderizarListaVazia() {
+    return (
+      <View style={styles.mensagemVazia}>
+        <Text style={styles.mensagemVaziaTexto}>
+          Nenhum produto encontrado.
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <FlatList
+        data={produtosFiltrados}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={renderizarProduto}
+        numColumns={2}
+        columnWrapperStyle={styles.linhaProdutos}
+        contentContainerStyle={styles.conteudo}
+        ListHeaderComponent={renderizarCabecalho()}
+        ListEmptyComponent={renderizarListaVazia}
+        keyboardShouldPersistTaps="handled"
+      />
 
       {/* Rodapé do carrinho */}
       <View style={styles.areaCarrinho}>
@@ -252,22 +294,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#E7F0E5',
   },
+
   conteudo: {
     paddingHorizontal: 20,
     paddingTop: 15,
     paddingBottom: 15,
   },
+
   titulo: {
     fontSize: 25,
     fontWeight: '600',
     color: '#402044',
   },
+
   subtitulo: {
     fontSize: 13,
     color: '#57465A',
     marginTop: 5,
     marginBottom: 15,
   },
+
   busca: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
@@ -277,91 +323,146 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     color: '#402044',
   },
+
   filtros: {
     flexDirection: 'row',
     gap: 15,
     marginBottom: 18,
     paddingHorizontal: 5,
   },
+
   filtroTexto: {
     fontSize: 12,
     color: '#063D2E',
   },
+
   filtroTextoAtivo: {
     fontWeight: '700',
     textDecorationLine: 'underline',
   },
-  gradeProdutos: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+
+  linhaProdutos: {
     justifyContent: 'space-between',
-    gap: 10,
   },
+
   cardProduto: {
     width: '48%',
-    minHeight: 125,
+    minHeight: 155,
     borderRadius: 16,
     padding: 12,
+    marginBottom: 10,
     justifyContent: 'space-between',
   },
+
   cardAmarelo: {
     backgroundColor: '#F8E9CC',
   },
+
   cardBranco: {
     backgroundColor: '#FFFFFF',
   },
+
   cardAdicionado: {
     borderWidth: 1.5,
     borderColor: '#063D2E',
   },
+
   cardIndisponivel: {
     opacity: 0.5,
   },
+
   iconeProduto: {
     fontSize: 27,
     color: '#063D2E',
     textAlign: 'center',
     marginBottom: 8,
   },
+
   nomeProduto: {
     fontSize: 13,
     fontWeight: '600',
     color: '#402044',
   },
+
   precoProduto: {
     fontSize: 12,
     color: '#063D2E',
     marginTop: 5,
   },
-  acaoProduto: {
-    fontSize: 11,
-    color: '#063D2E',
-    marginTop: 7,
+
+  controleQuantidade: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
   },
+
+  botaoMenos: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    backgroundColor: '#D94B4B',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  botaoMais: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    backgroundColor: '#249653',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  botaoDesativado: {
+    opacity: 0.35,
+  },
+
+  textoBotaoQuantidade: {
+    fontSize: 21,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+
+  numeroQuantidade: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#402044',
+  },
+
+  textoSemEstoque: {
+    fontSize: 10,
+    color: '#A13C3C',
+    textAlign: 'center',
+    marginTop: 5,
+  },
+
   mensagemVazia: {
     backgroundColor: '#FFFFFF',
     borderRadius: 15,
     padding: 20,
     alignItems: 'center',
   },
+
   mensagemVaziaTexto: {
     color: '#57465A',
     fontSize: 13,
   },
+
   areaCarrinho: {
     paddingHorizontal: 20,
     paddingVertical: 10,
     backgroundColor: '#E7F0E5',
   },
+
   botaoRevisar: {
     backgroundColor: '#063D2E',
     borderRadius: 13,
     paddingVertical: 13,
     alignItems: 'center',
   },
-  botaoDesativado: {
-    backgroundColor: '#FFFFFF',
-  },
+
   textoBotaoRevisar: {
     color: '#FFFFFF',
     fontSize: 13,
