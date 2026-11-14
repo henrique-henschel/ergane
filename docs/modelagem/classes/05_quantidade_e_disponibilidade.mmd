@@ -1,0 +1,40 @@
+classDiagram
+direction TB
+
+%% UC08 e condicionantes de UC09/UC28; movimentações dependem de D03.
+
+class Produto {
+        +id: UUID
+        +contaId: UUID
+        +categoriaId: UUID?
+        +nome: String
+        +diferenciador: String?
+        +descricao: String?
+        +precoVenda: Dinheiro
+        +custoUnitario: Dinheiro?
+        +validade: LocalDate?
+        +arquivadoEm: Instant?
+        +versao: Long
+        +criadoPorId: UUID
+        +criadoEm: Instant
+    }
+
+class AcompanhamentoQuantidade {
+        +id: UUID
+        +contaId: UUID
+        +produtoId: UUID
+        +habilitado: Boolean
+        +saldoReferencia: Quantidade?
+        +dataReferencia: LocalDate?
+        +politicaInsuficiencia: String?
+        +limiteMinimo: Quantidade?
+        +versao: Long
+    }
+
+class Quantidade {
+        <<valueObject>>
+        +valor: BigDecimal
+    }
+
+Produto "1" -- "0..1" AcompanhamentoQuantidade : politica
+AcompanhamentoQuantidade ..> Quantidade

@@ -1,0 +1,189 @@
+classDiagram
+direction TB
+
+namespace IDENTIDADE {
+    class Conta {
+        +id: UUID
+        +nome: String
+        +fusoHorario: ZoneId
+        +ativa: Boolean
+        +criadaEm: Instant
+    }
+    class Usuario {
+        +id: UUID
+        +referenciaAutenticacao: String
+        +nome: String
+        +ativo: Boolean
+    }
+    class AcessoNegocio {
+        +id: UUID
+        +contaId: UUID
+        +usuarioId: UUID
+        +permissoes: Set~String~
+        +ativo: Boolean
+    }
+}
+
+namespace CATALOGO {
+    class Produto {
+        +id: UUID
+        +contaId: UUID
+        +categoriaId: UUID?
+        +nome: String
+        +diferenciador: String?
+        +descricao: String?
+        +precoVenda: Dinheiro
+        +custoUnitario: Dinheiro?
+        +validade: LocalDate?
+        +arquivadoEm: Instant?
+        +versao: Long
+        +criadoPorId: UUID
+        +criadoEm: Instant
+    }
+    class Categoria {
+        +id: UUID
+        +contaId: UUID
+        +nome: String
+        +versao: Long
+    }
+    class AcompanhamentoQuantidade {
+        +id: UUID
+        +contaId: UUID
+        +produtoId: UUID
+        +habilitado: Boolean
+        +saldoReferencia: Quantidade?
+        +dataReferencia: LocalDate?
+        +politicaInsuficiencia: String?
+        +limiteMinimo: Quantidade?
+        +versao: Long
+    }
+}
+
+namespace OPERACAO {
+    class Venda {
+        +id: UUID
+        +contaId: UUID
+        +autorId: UUID
+        +ocorrencia: Ocorrencia
+        +registradaEm: Instant
+        +situacao: String
+        +origem: String
+        +totalRegistrado: Dinheiro
+        +formaPagamentoInformada: String?
+        +encomendaOrigemId: UUID?
+        +versao: Long
+        +totalValido(): Dinheiro
+    }
+    class ItemVenda {
+        +id: UUID
+        +produtoId: UUID
+        +nomeSnapshot: String
+        +diferenciadorSnapshot: String?
+        +quantidade: Quantidade
+        +precoUnitarioSnapshot: Dinheiro
+        +custoUnitarioSnapshot: Dinheiro?
+        +subtotal(): Dinheiro
+    }
+    class Encomenda {
+        +id: UUID
+        +contaId: UUID
+        +autorId: UUID
+        +referenciaPedido: String
+        +contatoOpcional: String?
+        +descricao: String?
+        +totalCombinado: Dinheiro
+        +entregaPrevista: LocalDate
+        +situacao: String
+        +vendaGeradaId: UUID?
+        +versao: Long
+        +criadaEm: Instant
+    }
+    class ItemEncomenda {
+        +id: UUID
+        +produtoId: UUID?
+        +descricaoSnapshot: String
+        +quantidade: Quantidade?
+        +precoUnitario: Dinheiro?
+    }
+    class ComplementoAgregado {
+        +id: UUID
+        +contaId: UUID
+        +autorId: UUID
+        +periodoInicio: LocalDate
+        +periodoFim: LocalDate
+        +valorAdicional: Dinheiro
+        +registradoEm: Instant
+        +substituidoPorId: UUID?
+        +versao: Long
+    }
+}
+
+namespace DECLARACOES_FINANCEIRAS {
+    class ObrigacaoFinanceira {
+        +id: UUID
+        +contaId: UUID
+        +encomendaId: UUID?
+        +vendaId: UUID?
+        +valorDevidoVigente: Dinheiro
+        +versao: Long
+        +saldoCalculado(): Dinheiro
+    }
+    class RecebimentoInformado {
+        +id: UUID
+        +contaId: UUID
+        +obrigacaoId: UUID
+        +autorId: UUID
+        +valor: Dinheiro
+        +formaInformada: String?
+        +ocorrencia: Ocorrencia
+        +registradoEm: Instant
+    }
+    class DevolucaoInformada {
+        +id: UUID
+        +contaId: UUID
+        +obrigacaoId: UUID
+        +recebimentoOrigemId: UUID?
+        +autorId: UUID
+        +valor: Dinheiro
+        +motivo: String
+        +ocorrencia: Ocorrencia
+        +registradaEm: Instant
+    }
+}
+
+namespace TIPOS {
+    class Dinheiro {
+        <<valueObject>>
+        +valor: BigDecimal
+    }
+    class Quantidade {
+        <<valueObject>>
+        +valor: BigDecimal
+    }
+    class Ocorrencia {
+        <<valueObject>>
+        +data: LocalDate
+        +hora: LocalTime?
+        +fuso: ZoneId?
+    }
+}
+
+Conta "1" -- "0..*" AcessoNegocio : autoriza
+Usuario "1" -- "0..*" AcessoNegocio : acessa
+Conta "1" -- "0..*" Produto : possui
+Conta "1" -- "0..*" Categoria : possui
+Categoria "0..1" <-- "0..*" Produto : classificado em
+Produto "1" -- "0..1" AcompanhamentoQuantidade : acompanha
+Conta "1" -- "0..*" Venda : registra
+Venda "1" *-- "0..*" ItemVenda : historico
+ItemVenda "0..*" --> "1" Produto : referencia
+Conta "1" -- "0..*" Encomenda : registra
+Encomenda "1" *-- "0..*" ItemEncomenda : detalhamento opcional
+Encomenda "0..1" --> "0..1" Venda : converte em
+Conta "1" -- "0..*" ComplementoAgregado : complementa
+Conta "1" -- "0..*" ObrigacaoFinanceira : acompanha
+ObrigacaoFinanceira "0..1" --> "0..1" Encomenda : pedido de origem
+ObrigacaoFinanceira "0..1" --> "0..1" Venda : venda vinculada
+ObrigacaoFinanceira "1" -- "0..*" RecebimentoInformado : declaracoes
+ObrigacaoFinanceira "1" -- "0..*" DevolucaoInformada : declaracoes
+DevolucaoInformada "0..*" --> "0..1" RecebimentoInformado : origem se definida D05
