@@ -3,6 +3,12 @@ package br.app.ergane.api.identidade.controller;
 import br.app.ergane.api.identidade.dto.LoginRequest;
 import br.app.ergane.api.identidade.dto.RenovacaoSessaoRequest;
 import br.app.ergane.api.identidade.dto.SessaoResponse;
+import br.app.ergane.api.identidade.dto.SelecionarNegocioRequest;
+import br.app.ergane.api.identidade.dto.NegocioSelecionadoResponse;
+import br.app.ergane.api.compartilhado.security.UsuarioAutenticado;
+import br.app.ergane.api.identidade.service.SelecaoNegocioService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PutMapping;
 import br.app.ergane.api.identidade.exception.FalhaAutenticacaoException;
 import br.app.ergane.api.identidade.exception.LoginBloqueadoException;
 import br.app.ergane.api.identidade.service.SessaoService;
@@ -23,9 +29,19 @@ import java.net.URI;
 public class SessaoController {
 
     private final SessaoService sessaoService;
+    private final SelecaoNegocioService selecaoNegocioService;
 
-    public SessaoController(SessaoService sessaoService) {
+    public SessaoController(SessaoService sessaoService, SelecaoNegocioService selecaoNegocioService) {
         this.sessaoService = sessaoService;
+        this.selecaoNegocioService = selecaoNegocioService;
+    }
+
+    @PutMapping("/atual/negocio")
+    public ResponseEntity<NegocioSelecionadoResponse> selecionarNegocio(
+            @AuthenticationPrincipal UsuarioAutenticado usuario,
+            @Valid @RequestBody SelecionarNegocioRequest request) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.PRAGMA, "no-cache").body(selecaoNegocioService.selecionar(usuario, request));
     }
 
     @PostMapping

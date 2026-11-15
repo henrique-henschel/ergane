@@ -10,6 +10,7 @@ import br.app.ergane.api.negocio.model.Negocio;
 import br.app.ergane.api.negocio.model.PapelNegocio;
 import br.app.ergane.api.negocio.repository.AcessoNegocioRepository;
 import br.app.ergane.api.negocio.repository.NegocioRepository;
+import br.app.ergane.api.compartilhado.exception.RecursoNaoEncontradoException;
 
 @Service
 public class NegocioService {
@@ -34,6 +35,12 @@ public class NegocioService {
 
     public record NegocioCriado(UUID negocioId, UUID acessoNegocioId, PapelNegocio papel) {
 
+    }
+
+    @Transactional(readOnly = true)
+    public void validarAcesso(UUID usuarioId, UUID negocioId) {
+        acessoNegocioRepository.findByUsuarioIdAndNegocioIdAndAtivoTrue(usuarioId, negocioId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Erro! Negócio não encontrado."));
     }
 
 }

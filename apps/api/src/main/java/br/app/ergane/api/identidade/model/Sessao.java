@@ -20,6 +20,9 @@ public class Sessao {
     @Column(nullable = false)
     private UUID usuarioId;
 
+    @Column(name = "negocio_ativo_id", nullable = true)
+    private UUID negocioAtivoId;
+
     @Column(name = "token_acesso_id", nullable = false)
     private UUID tokenAcessoId;
 
@@ -95,6 +98,17 @@ public class Sessao {
 
     public UUID getUsuarioId() {
         return usuarioId;
+    }
+
+    public UUID getNegocioAtivoId() {
+        return negocioAtivoId;
+    }
+
+    public void selecionarNegocio(UUID negocioId) {
+        if (negocioId == null) {
+            throw new IllegalArgumentException("O identificador do negócio é obrigatório.");
+        }
+        negocioAtivoId = negocioId;
     }
 
     public UUID getTokenAcessoId() {
