@@ -1,0 +1,62 @@
+classDiagram
+direction TB
+
+%% UC12/UC24 e RT02/RT03; complemento agregado não cria itens fictícios; D06/D07.
+
+class Venda {
+        +id: UUID
+        +contaId: UUID
+        +autorId: UUID
+        +ocorrencia: Ocorrencia
+        +registradaEm: Instant
+        +situacao: String
+        +origem: String
+        +totalRegistrado: Dinheiro
+        +formaPagamentoInformada: String?
+        +encomendaOrigemId: UUID?
+        +versao: Long
+        +totalValido(): Dinheiro
+    }
+
+class ComplementoAgregado {
+        +id: UUID
+        +contaId: UUID
+        +autorId: UUID
+        +periodoInicio: LocalDate
+        +periodoFim: LocalDate
+        +valorAdicional: Dinheiro
+        +registradoEm: Instant
+        +substituidoPorId: UUID?
+        +versao: Long
+    }
+
+class AlteracaoAuditada {
+        +id: UUID
+        +contaId: UUID
+        +entidadeTipo: String
+        +entidadeId: UUID
+        +versaoAnterior: Long?
+        +versaoNova: Long
+        +valoresAnteriores: Json?
+        +valoresPosteriores: Json?
+        +autorId: UUID
+        +ocorridaEm: Instant
+        +motivo: String?
+    }
+
+class OperacaoIdempotente {
+        +id: UUID
+        +contaId: UUID
+        +chave: String
+        +tipo: String
+        +hashConteudo: String
+        +estado: String
+        +resultadoId: UUID?
+        +respostaCanonica: Json?
+        +registradaEm: Instant
+    }
+
+Venda ..> AlteracaoAuditada : correcoes
+ComplementoAgregado ..> AlteracaoAuditada : historico
+Venda ..> OperacaoIdempotente : comando
+ComplementoAgregado ..> OperacaoIdempotente : comando

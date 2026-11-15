@@ -1,0 +1,39 @@
+classDiagram
+direction TB
+
+%% UC03–UC07; snapshots históricos não são alterados quando o catálogo muda.
+
+class Conta {
+        +id: UUID
+        +nome: String
+        +fusoHorario: ZoneId
+        +ativa: Boolean
+        +criadaEm: Instant
+    }
+
+class Produto {
+        +id: UUID
+        +contaId: UUID
+        +categoriaId: UUID?
+        +nome: String
+        +diferenciador: String?
+        +descricao: String?
+        +precoVenda: Dinheiro
+        +custoUnitario: Dinheiro?
+        +validade: LocalDate?
+        +arquivadoEm: Instant?
+        +versao: Long
+        +criadoPorId: UUID
+        +criadoEm: Instant
+    }
+
+class Categoria {
+        +id: UUID
+        +contaId: UUID
+        +nome: String
+        +versao: Long
+    }
+
+Conta "1" -- "0..*" Produto
+Conta "1" -- "0..*" Categoria
+Categoria "0..1" <-- "0..*" Produto : opcional

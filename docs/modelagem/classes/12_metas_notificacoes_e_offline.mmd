@@ -1,0 +1,83 @@
+classDiagram
+direction TB
+
+%% UC29, UC31–UC35; operações locais persistidas e deduplicação no servidor; D10/D11.
+
+class MetaVendas {
+        +id: UUID
+        +contaId: UUID
+        +inicio: LocalDate
+        +fim: LocalDate
+        +valorAlvo: Dinheiro
+        +versao: Long
+    }
+
+class PreferenciaNotificacao {
+        +id: UUID
+        +contaId: UUID
+        +usuarioId: UUID?
+        +tipo: String
+        +canal: String
+        +habilitada: Boolean
+        +versao: Long
+    }
+
+class EventoAviso {
+        +id: UUID
+        +contaId: UUID
+        +tipo: String
+        +chaveDeduplicacao: String
+        +referenciaId: UUID?
+        +calculadoEm: Instant
+        +dadosJustificativa: Json
+    }
+
+class OperacaoLocal {
+        <<local>>
+        +id: UUID
+        +contaId: UUID
+        +usuarioId: UUID
+        +tipo: String
+        +payload: Json
+        +hashConteudo: String
+        +estado: String
+        +criadaEm: Instant
+        +ultimaTentativaEm: Instant?
+    }
+
+class ConflitoSincronizacao {
+        <<local>>
+        +id: UUID
+        +operacaoLocalId: UUID
+        +codigoMotivo: String
+        +detalhes: Json
+        +estado: String
+        +decisao: String?
+        +resolvidoEm: Instant?
+    }
+
+class CacheNegocio {
+        <<local>>
+        +contaId: UUID
+        +usuarioAutorizadoId: UUID
+        +ultimaSincronizacaoEm: Instant?
+        +periodoHistoricoDisponivel: String?
+    }
+
+class OperacaoIdempotente {
+        +id: UUID
+        +contaId: UUID
+        +chave: String
+        +tipo: String
+        +hashConteudo: String
+        +estado: String
+        +resultadoId: UUID?
+        +respostaCanonica: Json?
+        +registradaEm: Instant
+    }
+
+MetaVendas ..> EventoAviso
+PreferenciaNotificacao ..> EventoAviso
+OperacaoLocal "1" --> "0..1" ConflitoSincronizacao
+CacheNegocio "1" -- "0..*" OperacaoLocal
+OperacaoLocal ..> OperacaoIdempotente

@@ -1,0 +1,81 @@
+classDiagram
+direction TB
+
+%% UC18: mesma obrigação e mesmos sinais, não duplicar financeiro; D04/D05.
+
+class Encomenda {
+        +id: UUID
+        +contaId: UUID
+        +autorId: UUID
+        +referenciaPedido: String
+        +contatoOpcional: String?
+        +descricao: String?
+        +totalCombinado: Dinheiro
+        +entregaPrevista: LocalDate
+        +situacao: String
+        +vendaGeradaId: UUID?
+        +versao: Long
+        +criadaEm: Instant
+    }
+
+class Venda {
+        +id: UUID
+        +contaId: UUID
+        +autorId: UUID
+        +ocorrencia: Ocorrencia
+        +registradaEm: Instant
+        +situacao: String
+        +origem: String
+        +totalRegistrado: Dinheiro
+        +formaPagamentoInformada: String?
+        +encomendaOrigemId: UUID?
+        +versao: Long
+        +totalValido(): Dinheiro
+    }
+
+class ObrigacaoFinanceira {
+        +id: UUID
+        +contaId: UUID
+        +encomendaId: UUID?
+        +vendaId: UUID?
+        +valorDevidoVigente: Dinheiro
+        +versao: Long
+        +saldoCalculado(): Dinheiro
+    }
+
+class ItemEncomenda {
+        +id: UUID
+        +produtoId: UUID?
+        +descricaoSnapshot: String
+        +quantidade: Quantidade?
+        +precoUnitario: Dinheiro?
+    }
+
+class ItemVenda {
+        +id: UUID
+        +produtoId: UUID
+        +nomeSnapshot: String
+        +diferenciadorSnapshot: String?
+        +quantidade: Quantidade
+        +precoUnitarioSnapshot: Dinheiro
+        +custoUnitarioSnapshot: Dinheiro?
+        +subtotal(): Dinheiro
+    }
+
+class RecebimentoInformado {
+        +id: UUID
+        +contaId: UUID
+        +obrigacaoId: UUID
+        +autorId: UUID
+        +valor: Dinheiro
+        +formaInformada: String?
+        +ocorrencia: Ocorrencia
+        +registradoEm: Instant
+    }
+
+Encomenda "0..1" --> "0..1" Venda : conversao unica
+Encomenda "1" *-- "0..*" ItemEncomenda
+Venda "1" *-- "0..*" ItemVenda
+ObrigacaoFinanceira "0..1" --> "0..1" Encomenda
+ObrigacaoFinanceira "0..1" --> "0..1" Venda
+ObrigacaoFinanceira "1" -- "0..*" RecebimentoInformado
