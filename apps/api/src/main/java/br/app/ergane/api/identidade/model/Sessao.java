@@ -136,4 +136,13 @@ public class Sessao {
         return revogadaEm;
     }
 
+    public void revogar(Instant agora) {
+        if (agora == null) {
+            throw new IllegalArgumentException("A data de revogação é obrigatória.");
+        }
+        if (revogadaEm == null) {
+            revogadaEm = agora.isBefore(criadoEm) ? criadoEm : agora;
+        }
+    }
+
 }

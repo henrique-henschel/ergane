@@ -16,4 +16,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
     )
     Optional<Usuario> findByEmailNormalizado(@Param("email") String email);
 
+    @Query(value = "SELECT email FROM usuarios WHERE id = :id", nativeQuery = true)
+    Optional<String> buscarEmailPorId(@Param("id") UUID id);
+
+    @Query(value = "SELECT ativo FROM usuarios WHERE id = :id FOR NO KEY UPDATE", nativeQuery = true)
+    Optional<Boolean> bloquearEConsultarAtivo(@Param("id") UUID id);
+
 }

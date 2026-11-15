@@ -64,6 +64,16 @@ public class SessaoService {
             return ResultadoLogin.invalido();
         }
 
+        boolean ativo = usuarioRepository.bloquearEConsultarAtivo(usuario.getId()).orElse(false);
+        agora = Instant.now();
+        if (!ativo) {
+            tentativa.registrarFalha(agora);
+            if (tentativa.estaBloqueada(agora)) {
+                return ResultadoLogin.bloqueado(segundosRestantes(agora, tentativa.getBloqueadoAte()));
+            }
+            return ResultadoLogin.invalido();
+        }
+
         String refresh = tokens.gerarRefreshToken();
         Sessao sessao = sessaoRepository.saveAndFlush(new Sessao(usuario.getId(), UUID.randomUUID(),
                 tokens.calcularHash(refresh), agora, agora.plus(Duration.ofDays(30)), agora.plus(Duration.ofDays(90))));
