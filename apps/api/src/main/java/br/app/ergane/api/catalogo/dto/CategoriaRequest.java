@@ -1,4 +1,4 @@
-package br.app.ergane.api.catalogo.categoria;
+package br.app.ergane.api.catalogo.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

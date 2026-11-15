@@ -1,4 +1,9 @@
-package br.app.ergane.api.catalogo.categoria;
+package br.app.ergane.api.catalogo.controller;
+
+import br.app.ergane.api.catalogo.dto.CategoriaRequest;
+import br.app.ergane.api.catalogo.dto.CategoriaResponse;
+import br.app.ergane.api.catalogo.model.Categoria;
+import br.app.ergane.api.catalogo.service.CategoriaService;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

@@ -1,4 +1,6 @@
-package br.app.ergane.api.catalogo.categoria;
+package br.app.ergane.api.catalogo.dto;
+
+import br.app.ergane.api.catalogo.model.Categoria;
 
 import java.time.Instant;
 import java.util.UUID;

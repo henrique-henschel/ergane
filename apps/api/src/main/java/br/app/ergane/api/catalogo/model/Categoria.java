@@ -1,4 +1,4 @@
-package br.app.ergane.api.catalogo.categoria;
+package br.app.ergane.api.catalogo.model;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
