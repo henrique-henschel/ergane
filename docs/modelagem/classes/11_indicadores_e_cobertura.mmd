@@ -1,0 +1,97 @@
+classDiagram
+direction TB
+
+%% UC23, UC25–UC28, UC30; projeções são cálculos, não necessariamente tabelas.
+
+class Venda {
+        +id: UUID
+        +contaId: UUID
+        +autorId: UUID
+        +ocorrencia: Ocorrencia
+        +registradaEm: Instant
+        +situacao: String
+        +origem: String
+        +totalRegistrado: Dinheiro
+        +formaPagamentoInformada: String?
+        +encomendaOrigemId: UUID?
+        +versao: Long
+        +totalValido(): Dinheiro
+    }
+
+class ItemVenda {
+        +id: UUID
+        +produtoId: UUID
+        +nomeSnapshot: String
+        +diferenciadorSnapshot: String?
+        +quantidade: Quantidade
+        +precoUnitarioSnapshot: Dinheiro
+        +custoUnitarioSnapshot: Dinheiro?
+        +subtotal(): Dinheiro
+    }
+
+class RecebimentoInformado {
+        +id: UUID
+        +contaId: UUID
+        +obrigacaoId: UUID
+        +autorId: UUID
+        +valor: Dinheiro
+        +formaInformada: String?
+        +ocorrencia: Ocorrencia
+        +registradoEm: Instant
+    }
+
+class DevolucaoInformada {
+        +id: UUID
+        +contaId: UUID
+        +obrigacaoId: UUID
+        +recebimentoOrigemId: UUID?
+        +autorId: UUID
+        +valor: Dinheiro
+        +motivo: String
+        +ocorrencia: Ocorrencia
+        +registradaEm: Instant
+    }
+
+class IndicadoresPeriodo {
+        <<projecao>>
+        +vendasValidas: Dinheiro
+        +recebimentosInformados: Dinheiro
+        +devolucoesInformadas: Dinheiro
+        +pendenciasNaConsulta: Dinheiro?
+        +consultadoEm: Instant
+        +cobertura: CoberturaDados
+    }
+
+class CoberturaDados {
+        <<projecao>>
+        +inicio: LocalDate
+        +fim: LocalDate
+        +temCacheCompleto: Boolean
+        +registrosElegiveis: Long
+        +registrosSemHora: Long
+        +limitacoes: List~String~
+    }
+
+class SugestaoReposicao {
+        <<projecao>>
+        +produtoId: UUID
+        +quantidadeSugerida: Quantidade?
+        +motivoOuIndisponibilidade: String
+        +baseEPeriodo: String
+    }
+
+class CombinacaoObservada {
+        <<projecao>>
+        +produtoIds: Set~UUID~
+        +ocorrencias: Long
+        +transacoesElegiveis: Long
+        +cobertura: CoberturaDados
+    }
+
+IndicadoresPeriodo *-- CoberturaDados
+CombinacaoObservada --> CoberturaDados
+IndicadoresPeriodo ..> Venda
+IndicadoresPeriodo ..> RecebimentoInformado
+IndicadoresPeriodo ..> DevolucaoInformada
+CombinacaoObservada ..> ItemVenda
+SugestaoReposicao ..> ItemVenda

@@ -1,0 +1,82 @@
+classDiagram
+direction TB
+
+%% UC20–UC22; declaração de recebimento não significa liquidação bancária; D05.
+
+class Conta {
+        +id: UUID
+        +nome: String
+        +fusoHorario: ZoneId
+        +ativa: Boolean
+        +criadaEm: Instant
+    }
+
+class ObrigacaoFinanceira {
+        +id: UUID
+        +contaId: UUID
+        +encomendaId: UUID?
+        +vendaId: UUID?
+        +valorDevidoVigente: Dinheiro
+        +versao: Long
+        +saldoCalculado(): Dinheiro
+    }
+
+class Venda {
+        +id: UUID
+        +contaId: UUID
+        +autorId: UUID
+        +ocorrencia: Ocorrencia
+        +registradaEm: Instant
+        +situacao: String
+        +origem: String
+        +totalRegistrado: Dinheiro
+        +formaPagamentoInformada: String?
+        +encomendaOrigemId: UUID?
+        +versao: Long
+        +totalValido(): Dinheiro
+    }
+
+class Encomenda {
+        +id: UUID
+        +contaId: UUID
+        +autorId: UUID
+        +referenciaPedido: String
+        +contatoOpcional: String?
+        +descricao: String?
+        +totalCombinado: Dinheiro
+        +entregaPrevista: LocalDate
+        +situacao: String
+        +vendaGeradaId: UUID?
+        +versao: Long
+        +criadaEm: Instant
+    }
+
+class RecebimentoInformado {
+        +id: UUID
+        +contaId: UUID
+        +obrigacaoId: UUID
+        +autorId: UUID
+        +valor: Dinheiro
+        +formaInformada: String?
+        +ocorrencia: Ocorrencia
+        +registradoEm: Instant
+    }
+
+class DevolucaoInformada {
+        +id: UUID
+        +contaId: UUID
+        +obrigacaoId: UUID
+        +recebimentoOrigemId: UUID?
+        +autorId: UUID
+        +valor: Dinheiro
+        +motivo: String
+        +ocorrencia: Ocorrencia
+        +registradaEm: Instant
+    }
+
+Conta "1" -- "0..*" ObrigacaoFinanceira
+ObrigacaoFinanceira "0..1" --> "0..1" Venda
+ObrigacaoFinanceira "0..1" --> "0..1" Encomenda
+ObrigacaoFinanceira "1" -- "0..*" RecebimentoInformado
+ObrigacaoFinanceira "1" -- "0..*" DevolucaoInformada
+DevolucaoInformada "0..*" --> "0..1" RecebimentoInformado

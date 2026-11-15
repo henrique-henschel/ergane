@@ -1,0 +1,14 @@
+{
+  "name": "ergane",
+  "private": true,
+  "description": "Ferramentas de documentação do monorepo Ergane (ADRs com Log4brains).",
+  "scripts": {
+    "adr:new": "log4brains adr new",
+    "adr:list": "log4brains adr list",
+    "adr:preview": "log4brains preview",
+    "adr:build": "log4brains build"
+  },
+  "devDependencies": {
+    "log4brains": "^1.1.0"
+  }
+}

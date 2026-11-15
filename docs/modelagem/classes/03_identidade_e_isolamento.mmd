@@ -1,0 +1,30 @@
+classDiagram
+direction TB
+
+%% UC01 e isolamento multi-tenant; a autenticação nativa/biometria é integração externa.
+
+class Conta {
+        +id: UUID
+        +nome: String
+        +fusoHorario: ZoneId
+        +ativa: Boolean
+        +criadaEm: Instant
+    }
+
+class Usuario {
+        +id: UUID
+        +referenciaAutenticacao: String
+        +nome: String
+        +ativo: Boolean
+    }
+
+class AcessoNegocio {
+        +id: UUID
+        +contaId: UUID
+        +usuarioId: UUID
+        +permissoes: Set~String~
+        +ativo: Boolean
+    }
+
+Conta "1" -- "0..*" AcessoNegocio : autoriza
+Usuario "1" -- "0..*" AcessoNegocio : acessa

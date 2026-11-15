@@ -1,73 +1,24 @@
-# [short title of solved problem and solution]
+# [título curto do problema e da solução]
 
-- Status: [draft | proposed | rejected | accepted | deprecated | … | superseded by [xxx](yyyymmdd-xxx.md)] <!-- optional -->
-- Deciders: [list everyone involved in the decision] <!-- optional -->
-- Date: [YYYY-MM-DD when the decision was last updated] <!-- optional. To customize the ordering without relying on Git creation dates and filenames -->
-- Tags: [space and/or comma separated list of tags] <!-- optional -->
+- Status: [draft | proposed | rejected | accepted | deprecated | superseded by [xxx](aaaammdd-xxx.md)]
+- Deciders: [lista de todos os envolvidos na decisão] <!-- optional -->
+- Date: [AAAA-MM-DD da última atualização da decisão]
+- Tags: [lista de tags separadas por espaço e/ou vírgula] <!-- optional -->
 
-Technical Story: [description | ticket/issue URL] <!-- optional -->
+## Contexto
 
-## Context and Problem Statement
+[Descreva o problema e as restrições que motivaram a decisão, em poucas frases.]
 
-[Describe the context and problem statement, e.g., in free form using two to three sentences. You may want to articulate the problem in form of a question.]
+## Decisão
 
-## Decision Drivers <!-- optional -->
+[Descreva o direcionamento técnico escolhido e seus detalhes práticos de implementação.]
 
-- [driver 1, e.g., a force, facing concern, …]
-- [driver 2, e.g., a force, facing concern, …]
-- … <!-- numbers of drivers can vary -->
+## Alternativas consideradas
 
-## Considered Options
+- **[alternativa 1]:** [por que não foi adotada]
+- **[alternativa 2]:** [por que não foi adotada]
 
-- [option 1]
-- [option 2]
-- [option 3]
-- … <!-- numbers of options can vary -->
+## Consequências
 
-## Decision Outcome
-
-Chosen option: "[option 1]", because [justification. e.g., only option, which meets k.o. criterion decision driver | which resolves force force | … | comes out best (see below)].
-
-### Positive Consequences <!-- optional -->
-
-- [e.g., improvement of quality attribute satisfaction, follow-up decisions required, …]
-- …
-
-### Negative Consequences <!-- optional -->
-
-- [e.g., compromising quality attribute, follow-up decisions required, …]
-- …
-
-## Pros and Cons of the Options <!-- optional -->
-
-### [option 1]
-
-[example | description | pointer to more information | …] <!-- optional -->
-
-- Good, because [argument a]
-- Good, because [argument b]
-- Bad, because [argument c]
-- … <!-- numbers of pros and cons can vary -->
-
-### [option 2]
-
-[example | description | pointer to more information | …] <!-- optional -->
-
-- Good, because [argument a]
-- Good, because [argument b]
-- Bad, because [argument c]
-- … <!-- numbers of pros and cons can vary -->
-
-### [option 3]
-
-[example | description | pointer to more information | …] <!-- optional -->
-
-- Good, because [argument a]
-- Good, because [argument b]
-- Bad, because [argument c]
-- … <!-- numbers of pros and cons can vary -->
-
-## Links <!-- optional -->
-
-- [Link type](link to adr) <!-- example: Refined by [xxx](yyyymmdd-xxx.md) -->
-- … <!-- numbers of links can vary -->
+- **Ganhos:** [benefícios obtidos]
+- **Custos e limitações:** [limitações assumidas e itens postergados]

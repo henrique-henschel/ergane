@@ -56,3 +56,23 @@ Por enquanto todos fazem commit direto na `main`. Antes de subir:
 1. `git pull` para pegar o que os outros subiram.
 2. Garanta que a aplicacao sobe sem erro.
 3. `git push origin main`.
+
+## ADRs (decisoes arquiteturais)
+
+As decisoes arquiteturais ficam em `docs/adr/` e sao gerenciadas com o [Log4brains](https://github.com/thomvaill/log4brains). Na raiz do repositorio, rode `npm install` uma vez e depois:
+
+| Comando               | O que faz                                          |
+| --------------------- | -------------------------------------------------- |
+| `npm run adr:new`     | cria uma ADR nova a partir de `docs/adr/template.md` |
+| `npm run adr:list`    | lista as ADRs e seus status                        |
+| `npm run adr:preview` | site local em http://localhost:4004                |
+| `npm run adr:build`   | gera o site estatico em `.log4brains/out`          |
+
+Para criar uma ADR:
+
+1. Rode `npm run adr:new` e informe o titulo. O arquivo e criado como `docs/adr/AAAAMMDD-titulo.md`.
+2. Preencha o arquivo (em portugues, com as secoes do template) e ajuste `Status` (ex.: `accepted`) e `Date` (`AAAA-MM-DD`).
+3. Acrescente a linha da nova ADR na tabela de `docs/adr/README.md` (o indice e manual).
+4. Mantenha uma linha em branco antes de qualquer lista, senao ela nao renderiza no site.
+
+Mais detalhes em `docs/adr/README.md`.
