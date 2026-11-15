@@ -3,6 +3,7 @@ package br.app.ergane.api.identidade.model;
 import jakarta.persistence.*;
 
 import java.time.Instant;
+import java.time.Duration;
 import java.util.UUID;
 
 @Entity
@@ -44,6 +45,30 @@ public class TentativaLogin {
 
     public UUID getId() {
         return id;
+    }
+
+    public boolean estaBloqueada(Instant agora) {
+        return bloqueadoAte != null && agora.isBefore(bloqueadoAte);
+    }
+
+    public void registrarFalha(Instant agora) {
+        if (estaBloqueada(agora)) {
+            return;
+        }
+        if (falhas == 0 || !agora.isBefore(janelaInicioEm.plus(Duration.ofMinutes(15)))) {
+            reiniciar(agora);
+        }
+        falhas = Math.min(falhas, Integer.MAX_VALUE - 1) + 1;
+        if (falhas >= 5) {
+            long espera = Math.min(900L, 30L << Math.min(falhas - 5, 5));
+            bloqueadoAte = agora.plusSeconds(espera);
+        }
+    }
+
+    public void reiniciar(Instant agora) {
+        falhas = 0;
+        janelaInicioEm = agora;
+        bloqueadoAte = null;
     }
 
     public String getEmailNormalizado() {

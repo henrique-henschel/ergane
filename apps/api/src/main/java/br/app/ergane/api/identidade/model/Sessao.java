@@ -72,6 +72,27 @@ public class Sessao {
         return id;
     }
 
+    public boolean estaValida(Instant agora) {
+        return revogadaEm == null && agora.isBefore(expiraEm) && agora.isBefore(limiteAbsolutoEm);
+    }
+
+    public void renovar(UUID novoTokenAcessoId, String novoRefreshTokenHash, Instant agora, Instant novaExpiracao) {
+        if (!estaValida(agora)) {
+            throw new IllegalStateException("A sessão não pode ser renovada.");
+        }
+        if (novoTokenAcessoId == null || novoRefreshTokenHash == null
+                || !novoRefreshTokenHash.matches("[0-9a-f]{64}")) {
+            throw new IllegalArgumentException("Os novos identificadores da sessão são inválidos.");
+        }
+        if (novaExpiracao == null || !agora.isBefore(novaExpiracao)
+                || novaExpiracao.isAfter(limiteAbsolutoEm)) {
+            throw new IllegalArgumentException("A nova expiração deve respeitar o limite absoluto.");
+        }
+        tokenAcessoId = novoTokenAcessoId;
+        refreshTokenHash = novoRefreshTokenHash;
+        expiraEm = novaExpiracao;
+    }
+
     public UUID getUsuarioId() {
         return usuarioId;
     }
