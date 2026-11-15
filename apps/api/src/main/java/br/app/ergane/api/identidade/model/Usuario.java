@@ -1,12 +1,19 @@
 package br.app.ergane.api.identidade.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import java.time.Instant;
+import java.util.UUID;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.Instant;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "usuarios")
@@ -51,9 +58,6 @@ public class Usuario {
         String emailNormalizado = email == null ? null : email.trim();
         if (emailNormalizado == null || emailNormalizado.isBlank()) {
             throw new IllegalArgumentException("O email do usuário é obrigatório.");
-        }
-        if (senhaHash == null || senhaHash.isBlank()) {
-            throw new IllegalArgumentException("O hash da senha é obrigatório.");
         }
         this.nome = nome;
         this.email = emailNormalizado;
