@@ -1,4 +1,4 @@
-package br.app.ergane.api.compartilhado;
+package br.app.ergane.api.compartilhado.exception;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;

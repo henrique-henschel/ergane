@@ -1,4 +1,4 @@
-package br.app.ergane.api.compartilhado;
+package br.app.ergane.api.compartilhado.exception;
 
 public class RegraNegocioException extends RuntimeException {
 

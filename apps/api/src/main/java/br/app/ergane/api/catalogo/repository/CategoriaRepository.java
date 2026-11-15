@@ -1,4 +1,6 @@
-package br.app.ergane.api.catalogo.categoria;
+package br.app.ergane.api.catalogo.repository;
+
+import br.app.ergane.api.catalogo.model.Categoria;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -6,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-interface CategoriaRepository extends JpaRepository<Categoria, UUID> {
+public interface CategoriaRepository extends JpaRepository<Categoria, UUID> {
 
     List<Categoria> findAllByNegocioIdOrderByNomeAsc(UUID negocioId);
 
