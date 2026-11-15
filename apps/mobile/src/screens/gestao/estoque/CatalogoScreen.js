@@ -3,9 +3,8 @@ import { useMemo } from 'react';
 
 import {View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Image, SafeAreaView } from 'react-native';
 
-import Header from '../components/Header';
-
-import BottomNavigation from '../components/BottomNavigation';
+import Header from '../../../components/Header';
+import BottomNavigation from '../../../components/BottomNavigation';
 
 const TAMANHO_PAGINA = 5;
 

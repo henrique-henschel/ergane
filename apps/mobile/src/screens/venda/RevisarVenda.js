@@ -8,9 +8,10 @@ import {
   ScrollView,
   SafeAreaView,
   StyleSheet,
+  TextInput,
 } from 'react-native';
 
-import Header from '../components/Header';
+import Header from '../../components/Header';
 
 const formasPagamento = ['PIX', 'Crédito', 'Débito'];
 
@@ -22,8 +23,12 @@ export default function RevisarVenda({
   produtos,
   carrinho,
   onVoltar,
+  onConfirmarVenda,
 }) {
   const [formaPagamento, setFormaPagamento] = useState('');
+  const [valorRecebido, setValorRecebido] = useState('');
+
+  const dinheiroAtivo = formaPagamento === 'Dinheiro';
 
   // Relaciona os produtos do catálogo aos itens do carrinho.
   const itensVenda = carrinho
@@ -54,6 +59,37 @@ export default function RevisarVenda({
     (total, item) => total + item.quantidade,
     0
   );
+
+  // Converte o valor digitado para número.
+  const valorNumerico = Number(valorRecebido.replace(',', '.')) || 0;
+
+  // Calcula o troco, sem permitir valores negativos.
+  const valorTroco = Math.max(
+    valorNumerico - valorTotal,
+    0
+  );
+
+  // Ativa ou desativa o recebimento em dinheiro.
+  function alternarDinheiro() {
+    if (dinheiroAtivo) {
+      setFormaPagamento('');
+      setValorRecebido('');
+    } else {
+      setFormaPagamento('Dinheiro');
+    }
+  }
+
+  function formatarEntradaDinheiro(valor) {
+    const numeros = valor.replace(/\D/g, '');
+
+    if (!numeros) {
+      return '';
+    }
+
+    const centavos = Number(numeros);
+
+    return (centavos / 100).toFixed(2).replace('.', ',');
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -120,7 +156,10 @@ export default function RevisarVenda({
                     styles.opcaoPagamento,
                     selecionada && styles.opcaoSelecionada,
                   ]}
-                  onPress={() => setFormaPagamento(forma)}
+                  onPress={() => {
+                    setFormaPagamento(forma);
+                    setValorRecebido('');
+                  }}
                 >
                   <Text
                     style={[
@@ -134,12 +173,67 @@ export default function RevisarVenda({
               );
             })}
           </View>
+
+          {/* Separação visual do dinheiro */}
+          <View style={styles.separadorDinheiro} />
+
+          {/* Recebimento em dinheiro */}
+          <TouchableOpacity
+            style={[
+              styles.opcaoDinheiro,
+              dinheiroAtivo && styles.opcaoDinheiroAtiva,
+            ]}
+            onPress={alternarDinheiro}
+          >
+            <Text
+              style={[
+                styles.textoDinheiro,
+                dinheiroAtivo && styles.textoDinheiroAtivo,
+              ]}
+            >
+              Dinheiro
+            </Text>
+          </TouchableOpacity>
+
+          {/* Valor recebido */}
+          <Text style={styles.rotuloCampo}>
+            Recebido
+          </Text>
+
+          <TextInput
+            style={[
+              styles.campoRecebido,
+              dinheiroAtivo && styles.campoRecebidoAtivo,
+            ]}
+            value={dinheiroAtivo ? `R$ ${valorRecebido || '0,00'}` : ''}
+            onChangeText={(texto) => {
+              setValorRecebido(formatarEntradaDinheiro(texto));
+            }}
+            placeholder="R$ 0,00"
+            placeholderTextColor="#A99EAC"
+            keyboardType="numeric"
+            editable={dinheiroAtivo}
+          />
+
+          {/* Troco */}
+          <Text style={styles.rotuloCampo}>
+            Troco
+          </Text>
+
+          <View style={styles.campoTroco}>
+            <Text style={styles.valorTroco}>
+              {formatarPreco(dinheiroAtivo ? valorTroco : 0)}
+            </Text>
+          </View>
         </View>
       </ScrollView>
 
       {/* Botão de confirmação, sem funcionalidade nesta etapa */}
       <View style={styles.areaBotao}>
-        <TouchableOpacity style={styles.botaoConfirmar}>
+        <TouchableOpacity
+          style={styles.botaoConfirmar}
+          onPress={() => onConfirmarVenda({ valorTotal })}
+        >
           <Text style={styles.textoBotaoConfirmar}>
             Confirmar venda
           </Text>
@@ -252,6 +346,72 @@ const styles = StyleSheet.create({
   textoOpcaoSelecionada: {
     color: '#FFFFFF',
   },
+  separadorDinheiro: {
+    height: 1,
+    backgroundColor: '#D8C9DC',
+    marginTop: 16,
+    marginBottom: 2,
+  },
+  // Botão Dinheiro
+  opcaoDinheiro: {
+    alignSelf: 'flex-start',
+    paddingVertical: 11,
+    paddingHorizontal: 22,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'transparent',
+    marginTop: 14,
+  },
+  opcaoDinheiroAtiva: {
+    backgroundColor: '#063D2E',
+    borderColor: '#063D2E',
+  },
+  textoDinheiro: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#402044',
+  },
+  textoDinheiroAtivo: {
+    color: '#FFFFFF',
+  },
+
+  // Campo Recebido
+  rotuloCampo: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#402044',
+    marginTop: 14,
+    marginBottom: 7,
+  },
+  campoRecebido: {
+    backgroundColor: '#E5DCE8',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    fontSize: 14,
+    color: '#402044',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  campoRecebidoAtivo: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#063D2E',
+  },
+
+  // Campo Troco
+  campoTroco: {
+    backgroundColor: '#E5DCE8',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+  },
+  valorTroco: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#063D2E',
+  },
+
   areaBotao: {
     paddingHorizontal: 20,
     paddingVertical: 12,
