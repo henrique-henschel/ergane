@@ -1,4 +1,9 @@
-package br.app.ergane.api.catalogo.produto;
+package br.app.ergane.api.catalogo.controller;
+
+import br.app.ergane.api.catalogo.dto.ProdutoRequest;
+import br.app.ergane.api.catalogo.dto.ProdutoResponse;
+import br.app.ergane.api.catalogo.model.Produto;
+import br.app.ergane.api.catalogo.service.ProdutoService;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

@@ -1,9 +1,11 @@
-package br.app.ergane.api.catalogo.produto;
+package br.app.ergane.api.catalogo.service;
 
-import br.app.ergane.api.catalogo.categoria.CategoriaService;
-import br.app.ergane.api.compartilhado.ContextoNegocio;
-import br.app.ergane.api.compartilhado.RecursoNaoEncontradoException;
-import br.app.ergane.api.compartilhado.RegraNegocioException;
+import br.app.ergane.api.catalogo.dto.ProdutoRequest;
+import br.app.ergane.api.catalogo.model.Produto;
+import br.app.ergane.api.catalogo.repository.ProdutoRepository;
+import br.app.ergane.api.compartilhado.contexto.ContextoNegocio;
+import br.app.ergane.api.compartilhado.exception.RecursoNaoEncontradoException;
+import br.app.ergane.api.compartilhado.exception.RegraNegocioException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

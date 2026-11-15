@@ -1,4 +1,6 @@
-package br.app.ergane.api.catalogo.produto;
+package br.app.ergane.api.catalogo.dto;
+
+import br.app.ergane.api.catalogo.model.Produto;
 
 import java.math.BigDecimal;
 import java.time.Instant;

@@ -1,4 +1,6 @@
-package br.app.ergane.api.catalogo.produto;
+package br.app.ergane.api.catalogo.repository;
+
+import br.app.ergane.api.catalogo.model.Produto;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -8,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-interface ProdutoRepository extends JpaRepository<Produto, UUID> {
+public interface ProdutoRepository extends JpaRepository<Produto, UUID> {
 
     Optional<Produto> findByNegocioIdAndId(UUID negocioId, UUID id);
 

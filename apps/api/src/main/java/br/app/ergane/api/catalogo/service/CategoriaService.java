@@ -2,7 +2,7 @@ package br.app.ergane.api.catalogo.service;
 
 import br.app.ergane.api.catalogo.model.Categoria;
 import br.app.ergane.api.catalogo.repository.CategoriaRepository;
-import br.app.ergane.api.compartilhado.ContextoNegocio;
+import br.app.ergane.api.compartilhado.contexto.ContextoNegocio;
 import br.app.ergane.api.compartilhado.exception.RecursoNaoEncontradoException;
 import br.app.ergane.api.compartilhado.exception.RegraNegocioException;
 import org.springframework.dao.DataIntegrityViolationException;

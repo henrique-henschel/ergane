@@ -1,4 +1,4 @@
-package br.app.ergane.api.catalogo.produto;
+package br.app.ergane.api.catalogo.dto;
 
 import jakarta.validation.constraints.*;
 
