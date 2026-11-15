@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 
-import GestaoScreen from './src/screens/GestaoScreen';
-import CatalogoScreen from './src/screens/CatalogoScreen';
-import DetalhesScreen from './src/screens/DetalhesScreen';
-import Vender from './src/screens/Vender';
-import RevisarVenda from './src/screens/RevisarVenda';
+import GestaoScreen from './src/screens/gestao/GestaoScreen';
+import CatalogoScreen from './src/screens/gestao/estoque/CatalogoScreen';
+import DetalhesScreen from './src/screens/gestao/estoque/DetalhesScreen';
+import Vender from './src/screens/venda/Vender';
+import RevisarVenda from './src/screens/venda/RevisarVenda';
 import EntradaScreen from './src/screens/EntradaScreen';
 import CombinacoesScreen from './src/screens/CombinacoesScreen';
+import VendaRegistradaScreen from './src/screens/venda/VendaRegistrada';
 
 import produtosIniciais from './src/mocks/produtos';
 
@@ -16,6 +17,8 @@ export default function App() {
   const [telaAtual, setTelaAtual] = useState('gestao');
   const [produtos] = useState(produtosIniciais);
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
+  const [proximoRegistro, setProximoRegistro] = useState(1);
+  const [vendaRegistrada, setVendaRegistrada] = useState(null);
   
   const [filtros, setFiltros] = useState({
     nome: '',
@@ -117,9 +120,28 @@ export default function App() {
     setTelaAtual('revisarVenda');
   }
 
+  function confirmarVenda(dadosVenda) {
+    setVendaRegistrada({
+      ...dadosVenda,
+      registro: proximoRegistro,
+    });
+
+    setProximoRegistro((atual) => atual + 1);
+
+    setCarrinho([]);
+    setTelaAtual('vendaRegistrada');
+  }
+
+  function iniciarNovaVenda() {
+    setCarrinho([]);
+    setTelaAtual('vender');
+  }
+
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar
+        style={telaAtual === 'vendaRegistrada' ? 'light' : 'dark'}
+      />
 
       {telaAtual === 'entrada' && (
         <EntradaScreen
@@ -173,6 +195,16 @@ export default function App() {
           produtos={produtos}
           carrinho={carrinho}
           onVoltar={() => setTelaAtual('vender')}
+          onConfirmarVenda={confirmarVenda}
+        />
+      )}
+
+      {telaAtual === 'vendaRegistrada' && vendaRegistrada && (
+        <VendaRegistradaScreen
+          valorTotal={vendaRegistrada.valorTotal}
+          registro={vendaRegistrada.registro}
+          onNovaVenda={iniciarNovaVenda}
+          onNavegar={navegarPara}
         />
       )}
 
@@ -181,6 +213,7 @@ export default function App() {
           onVoltar={() => setTelaAtual('entrada')}
         />
       )}
+
     </>
   );
 }

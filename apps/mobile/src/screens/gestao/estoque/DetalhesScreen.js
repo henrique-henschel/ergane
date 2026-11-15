@@ -7,7 +7,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 
-import Header from '../components/Header';
+import Header from '../../../components/Header';
 
 export default function DetalhesScreen({ produto, onVoltar }) {
   function formatarValor(valor) {
