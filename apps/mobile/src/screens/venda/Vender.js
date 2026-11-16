@@ -14,7 +14,12 @@ import {
 import Header from '../../components/Header';
 import BottomNavigation from '../../components/BottomNavigation';
 
-const categorias = ['Todos', 'Salgados', 'Bebidas', 'Doces'];
+const categorias = [
+  { nome: 'Todas', valor: 'Todos' },
+  { nome: 'Salgados', valor: 'Salgados' },
+  { nome: 'Bebidas', valor: 'Bebidas' },
+  { nome: 'Doces', valor: 'Doces' },
+];
 
 function formatarPreco(valor) {
   return `R$ ${valor.toFixed(2).replace('.', ',')}`;
@@ -31,6 +36,7 @@ export default function Vender({
 }) {
   const [busca, setBusca] = useState('');
   const [categoriaAtiva, setCategoriaAtiva] = useState('Todos');
+  const [filtroAberto, setFiltroAberto] = useState(false);
 
   // Filtra os produtos pelo nome e pela categoria selecionada.
   const produtosFiltrados = useMemo(() => {
@@ -87,7 +93,6 @@ export default function Vender({
 
   // Aumenta a quantidade do produto.
   function aumentarQuantidade(produto) {
-    // Não permite adicionar produtos controlados sem estoque.
     if (
       produto.controlaEstoque &&
       produto.quantidade !== null &&
@@ -115,7 +120,7 @@ export default function Vender({
     onAlterarQuantidade(produto.id, quantidadeAtual - 1);
   }
 
-  // Cabeçalho da lista: título, pesquisa e filtros.
+  // Cabeçalho da lista: título, pesquisa e filtro.
   function renderizarCabecalho() {
     return (
       <View>
@@ -127,6 +132,7 @@ export default function Vender({
           Selecione os produtos e suas quantidades.
         </Text>
 
+        {/* Barra de pesquisa */}
         <TextInput
           style={styles.busca}
           placeholder="⌕  Buscar produto..."
@@ -135,24 +141,53 @@ export default function Vender({
           onChangeText={setBusca}
         />
 
-        {/* Filtros de categoria */}
-        <View style={styles.filtros}>
-          {categorias.map((categoria) => (
-            <TouchableOpacity
-              key={categoria}
-              onPress={() => setCategoriaAtiva(categoria)}
-            >
-              <Text
-                style={[
-                  styles.filtroTexto,
-                  categoriaAtiva === categoria &&
-                    styles.filtroTextoAtivo,
-                ]}
-              >
-                {categoria}
+        {/* Filtro de categoria */}
+        <View style={styles.filtroContainer}>
+          <TouchableOpacity
+            style={styles.botaoFiltro}
+            onPress={() => setFiltroAberto(!filtroAberto)}
+          >
+            <View style={styles.conteudoFiltro}>
+              <Text style={styles.rotuloFiltro}>
+                Categoria
               </Text>
-            </TouchableOpacity>
-          ))}
+
+              <Text style={styles.valorFiltro}>
+                {categorias.find(
+                  (categoria) => categoria.valor === categoriaAtiva
+                )?.nome}
+              </Text>
+            </View>
+
+            <Text style={styles.setaFiltro}>
+              {filtroAberto ? '⌃' : '⌄'}
+            </Text>
+          </TouchableOpacity>
+
+          {filtroAberto && (
+            <View style={styles.listaOpcoesFiltro}>
+              {categorias.map((categoria) => (
+                <TouchableOpacity
+                  key={categoria.valor}
+                  style={styles.itemFiltro}
+                  onPress={() => {
+                    setCategoriaAtiva(categoria.valor);
+                    setFiltroAberto(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.textoItemFiltro,
+                      categoriaAtiva === categoria.valor &&
+                        styles.textoItemFiltroAtivo,
+                    ]}
+                  >
+                    {categoria.nome}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
       </View>
     );
@@ -261,6 +296,7 @@ export default function Vender({
         ListHeaderComponent={renderizarCabecalho()}
         ListEmptyComponent={renderizarListaVazia}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       />
 
       {/* Rodapé do carrinho */}
@@ -320,25 +356,68 @@ const styles = StyleSheet.create({
     height: 48,
     paddingHorizontal: 15,
     fontSize: 14,
-    marginBottom: 18,
+    marginBottom: 15,
     color: '#402044',
   },
 
-  filtros: {
-    flexDirection: 'row',
-    gap: 15,
+  // Filtro de categoria.
+  filtroContainer: {
     marginBottom: 18,
-    paddingHorizontal: 5,
   },
 
-  filtroTexto: {
+  botaoFiltro: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 13,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    minHeight: 62,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 5,
+  },
+
+  conteudoFiltro: {
+    flex: 1,
+  },
+
+  rotuloFiltro: {
     fontSize: 12,
-    color: '#063D2E',
+    fontWeight: '600',
+    color: '#402044',
   },
 
-  filtroTextoAtivo: {
+  valorFiltro: {
+    fontSize: 11,
+    color: '#827787',
+    marginTop: 4,
+  },
+
+  setaFiltro: {
+    fontSize: 19,
+    color: '#402044',
+  },
+
+  listaOpcoesFiltro: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 13,
+    marginTop: 5,
+    paddingVertical: 5,
+  },
+
+  itemFiltro: {
+    paddingHorizontal: 10,
+    paddingVertical: 11,
+  },
+
+  textoItemFiltro: {
+    fontSize: 11,
+    color: '#402044',
+  },
+
+  textoItemFiltroAtivo: {
+    color: '#063D2E',
     fontWeight: '700',
-    textDecorationLine: 'underline',
   },
 
   linhaProdutos: {

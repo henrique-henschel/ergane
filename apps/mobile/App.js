@@ -24,7 +24,6 @@ export default function App() {
     nome: '',
     categoria: 'Todas',
     disponibilidade: 'Todas',
-    pagina: 1,
   });
 
   const [carrinho, setCarrinho] = useState([]);

@@ -1,12 +1,18 @@
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
-import {View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Image, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  SafeAreaView,
+} from 'react-native';
 
 import Header from '../../../components/Header';
 import BottomNavigation from '../../../components/BottomNavigation';
-
-const TAMANHO_PAGINA = 5;
 
 export default function CatalogoScreen({
   produtos,
@@ -16,9 +22,13 @@ export default function CatalogoScreen({
   onVoltar,
   onNavegar,
 }) {
+  // Controla qual menu de filtro está aberto.
+  const [filtroAberto, setFiltroAberto] = useState('');
+
+  // Filtra os produtos conforme os critérios selecionados.
   const produtosFiltrados = useMemo(() => {
     return produtos.filter((produto) => {
-      // Produtos arquivados não aparecem no catálogo selecionável.
+      // Produtos arquivados não aparecem no catálogo.
       if (produto.arquivado) {
         return false;
       }
@@ -61,36 +71,25 @@ export default function CatalogoScreen({
     });
   }, [produtos, filtros]);
 
-  const totalPaginas = Math.max(
-    1,
-    Math.ceil(produtosFiltrados.length / TAMANHO_PAGINA)
-  );
-
-  const paginaAtual = Math.min(filtros.pagina, totalPaginas);
-
-  const inicio = (paginaAtual - 1) * TAMANHO_PAGINA;
-
-  const produtosPagina = produtosFiltrados.slice(
-    inicio,
-    inicio + TAMANHO_PAGINA
-  );
-
+  // Atualiza um filtro.
   function alterarFiltro(campo, valor) {
     onAtualizarFiltros({
       [campo]: valor,
-      pagina: 1,
     });
   }
 
+  // Limpa todos os filtros.
   function limparFiltros() {
     onAtualizarFiltros({
       nome: '',
       categoria: 'Todas',
       disponibilidade: 'Todas',
-      pagina: 1,
     });
+
+    setFiltroAberto('');
   }
 
+  // Informa a disponibilidade de cada produto.
   function obterDisponibilidade(produto) {
     if (
       !produto.controlaEstoque ||
@@ -106,184 +105,266 @@ export default function CatalogoScreen({
     return `${produto.quantidade} disponíveis`;
   }
 
+  // Renderiza cada produto da lista.
+  function renderizarProduto({ item: produto }) {
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => onSelecionarProduto(produto)}
+      >
+        <View style={styles.cardLinha}>
+          <Text style={styles.nomeProduto}>
+            {produto.nome} ›
+          </Text>
+
+          <Text style={styles.preco}>
+            R$ {produto.preco.toFixed(2).replace('.', ',')}
+          </Text>
+        </View>
+
+        <Text style={styles.informacao}>
+          {produto.categoria || 'Sem categoria'}
+          {' · '}
+          {obterDisponibilidade(produto)}
+        </Text>
+      </TouchableOpacity>
+    );
+  }
+
+  // Exibe uma mensagem quando nenhum produto é encontrado.
+  function renderizarListaVazia() {
+    return (
+      <View style={styles.vazio}>
+        <Text style={styles.vazioTitulo}>
+          Nenhum produto encontrado
+        </Text>
+
+        <Text style={styles.vazioTexto}>
+          Tente alterar os termos da busca ou os filtros.
+        </Text>
+
+        <TouchableOpacity
+          style={styles.botaoLimpar}
+          onPress={limparFiltros}
+        >
+          <Text style={styles.botaoLimparTexto}>
+            Limpar filtros
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.conteudo}
-        keyboardShouldPersistTaps="handled"
-      >
-        <Header onVoltar={onVoltar} />
 
-        <Text style={styles.titulo}>Seu catálogo</Text>
+      {/* Lista de produtos e conteúdo superior/inferior */}
+      <FlatList
+        data={produtosFiltrados}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={renderizarProduto}
+        ListHeaderComponent={
+          <>
+            {/* Header */}
+            <Header onVoltar={onVoltar} />
 
-        <Text style={styles.subtitulo}>
-          Produtos organizados, venda mais leve.
-        </Text>
+            {/* Título e subtítulo */}
+            <Text style={styles.titulo}>
+              Seu catálogo
+            </Text>
 
-        <TextInput
-          style={styles.busca}
-          placeholder="⌕  Buscar produto..."
-          placeholderTextColor="#827787"
-          value={filtros.nome}
-          onChangeText={(valor) => alterarFiltro('nome', valor)}
-        />
+            <Text style={styles.subtitulo}>
+              Produtos organizados, venda mais leve.
+            </Text>
 
-        <Text style={styles.rotulo}>Categoria</Text>
-
-        <View style={styles.opcoes}>
-          {[
-            'Todas',
-            'Salgado',
-            'Suco',
-            'Doce',
-            'Sem categoria',
-          ].map((categoria) => (
-            <TouchableOpacity
-              key={categoria}
-              style={[
-                styles.opcao,
-                filtros.categoria === categoria && styles.opcaoAtiva,
-              ]}
-              onPress={() => alterarFiltro('categoria', categoria)}
-            >
-              <Text
-                style={[
-                  styles.textoOpcao,
-                  filtros.categoria === categoria &&
-                    styles.textoOpcaoAtiva,
-                ]}
-              >
-                {categoria}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <Text style={styles.rotulo}>Disponibilidade</Text>
-
-        <View style={styles.opcoes}>
-          {[
-            'Todas',
-            'Disponível',
-            'Sem estoque',
-            'Desconhecida',
-          ].map((disponibilidade) => (
-            <TouchableOpacity
-              key={disponibilidade}
-              style={[
-                styles.opcao,
-                filtros.disponibilidade === disponibilidade &&
-                  styles.opcaoAtiva,
-              ]}
-              onPress={() =>
-                alterarFiltro('disponibilidade', disponibilidade)
+            {/* Barra de pesquisa */}
+            <TextInput
+              style={styles.busca}
+              placeholder="⌕  Buscar produto..."
+              placeholderTextColor="#827787"
+              value={filtros.nome}
+              onChangeText={(valor) =>
+                alterarFiltro('nome', valor)
               }
-            >
-              <Text
-                style={[
-                  styles.textoOpcao,
-                  filtros.disponibilidade === disponibilidade &&
-                    styles.textoOpcaoAtiva,
-                ]}
-              >
-                {disponibilidade}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+            />
 
-        <Text style={styles.resultados}>
-          {produtosFiltrados.length} produto(s) encontrado(s)
-        </Text>
+            {/* Seletores de filtros */}
+            <View style={styles.linhaFiltros}>
 
-        {produtosPagina.length > 0 ? (
-          produtosPagina.map((produto) => (
-            <TouchableOpacity
-              key={produto.id}
-              style={styles.card}
-              onPress={() => onSelecionarProduto(produto)}
-            >
-              <View style={styles.cardLinha}>
-                <Text style={styles.nomeProduto}>
-                  {produto.nome} ›
-                </Text>
+              {/* Filtro de categoria */}
+              <View style={styles.filtroContainer}>
+                <TouchableOpacity
+                  style={styles.botaoFiltro}
+                  onPress={() =>
+                    setFiltroAberto(
+                      filtroAberto === 'categoria'
+                        ? ''
+                        : 'categoria'
+                    )
+                  }
+                >
+                  <View style={styles.conteudoFiltro}>
+                    <Text style={styles.rotuloFiltro}>
+                      Categoria
+                    </Text>
 
-                <Text style={styles.preco}>
-                  R$ {produto.preco.toFixed(2).replace('.', ',')}
-                </Text>
+                    <Text
+                      style={styles.valorFiltro}
+                      numberOfLines={1}
+                    >
+                      {filtros.categoria}
+                    </Text>
+                  </View>
+
+                  <Text style={styles.setaFiltro}>
+                    {filtroAberto === 'categoria' ? '⌃' : '⌄'}
+                  </Text>
+                </TouchableOpacity>
+
+                {filtroAberto === 'categoria' && (
+                  <View style={styles.listaOpcoesFiltro}>
+                    {[
+                      'Todas',
+                      'Salgado',
+                      'Suco',
+                      'Doce',
+                      'Sem categoria',
+                    ].map((categoria) => (
+                      <TouchableOpacity
+                        key={categoria}
+                        style={styles.itemFiltro}
+                        onPress={() => {
+                          alterarFiltro('categoria', categoria);
+                          setFiltroAberto('');
+                        }}
+                      >
+                        <Text
+                          style={[
+                            styles.textoItemFiltro,
+                            filtros.categoria === categoria &&
+                              styles.textoItemFiltroAtivo,
+                          ]}
+                        >
+                          {categoria}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
               </View>
 
-              <Text style={styles.informacao}>
-                {produto.categoria || 'Sem categoria'}
-                {' · '}
-                {obterDisponibilidade(produto)}
-              </Text>
-            </TouchableOpacity>
-          ))
-        ) : (
-          <View style={styles.vazio}>
-            <Text style={styles.vazioTitulo}>
-              Nenhum produto encontrado
+              {/* Filtro de disponibilidade */}
+              <View style={styles.filtroContainer}>
+                <TouchableOpacity
+                  style={styles.botaoFiltro}
+                  onPress={() =>
+                    setFiltroAberto(
+                      filtroAberto === 'disponibilidade'
+                        ? ''
+                        : 'disponibilidade'
+                    )
+                  }
+                >
+                  <View style={styles.conteudoFiltro}>
+                    <Text style={styles.rotuloFiltro}>
+                      Disponibilidade
+                    </Text>
+
+                    <Text
+                      style={styles.valorFiltro}
+                      numberOfLines={1}
+                    >
+                      {filtros.disponibilidade}
+                    </Text>
+                  </View>
+
+                  <Text style={styles.setaFiltro}>
+                    {filtroAberto === 'disponibilidade' ? '⌃' : '⌄'}
+                  </Text>
+                </TouchableOpacity>
+
+                {filtroAberto === 'disponibilidade' && (
+                  <View style={styles.listaOpcoesFiltro}>
+                    {[
+                      'Todas',
+                      'Disponível',
+                      'Sem estoque',
+                      'Desconhecida',
+                    ].map((disponibilidade) => (
+                      <TouchableOpacity
+                        key={disponibilidade}
+                        style={styles.itemFiltro}
+                        onPress={() => {
+                          alterarFiltro(
+                            'disponibilidade',
+                            disponibilidade
+                          );
+                          setFiltroAberto('');
+                        }}
+                      >
+                        <Text
+                          style={[
+                            styles.textoItemFiltro,
+                            filtros.disponibilidade === disponibilidade &&
+                              styles.textoItemFiltroAtivo,
+                          ]}
+                        >
+                          {disponibilidade}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {/* Quantidade de resultados */}
+            <Text style={styles.resultados}>
+              {produtosFiltrados.length} produto(s) encontrado(s)
             </Text>
-
-            <Text style={styles.vazioTexto}>
-              Tente alterar os termos da busca ou os filtros.
-            </Text>
-
-            <TouchableOpacity
-              style={styles.botaoLimpar}
-              onPress={limparFiltros}
-            >
-              <Text style={styles.botaoLimparTexto}>
-                Limpar filtros
+          </>
+        }
+        ListEmptyComponent={renderizarListaVazia}
+        ListFooterComponent={
+          /* Card de categorias depois dos produtos */
+          <TouchableOpacity
+            style={styles.cardCategorias}
+            activeOpacity={0.9}
+          >
+            <View>
+              <Text style={styles.tituloCategorias}>
+                Categorias ›
               </Text>
-            </TouchableOpacity>
-          </View>
-        )}
 
-        {produtosFiltrados.length > 0 && (
-          <View style={styles.paginacao}>
-            <TouchableOpacity
-              disabled={paginaAtual === 1}
-              onPress={() =>
-                onAtualizarFiltros({ pagina: paginaAtual - 1 })
-              }
-            >
-              <Text
-                style={[
-                  styles.paginaBotao,
-                  paginaAtual === 1 && styles.paginaDesativada,
-                ]}
-              >
-                Anterior
+              <Text style={styles.descricaoCategorias}>
+                Salgados, bebidas e doces
               </Text>
-            </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        }
+        contentContainerStyle={styles.conteudo}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      />
 
-            <Text style={styles.paginaTexto}>
-              Página {paginaAtual} de {totalPaginas}
-            </Text>
+      {/* Botão de adicionar produto */}
+      <View style={styles.areaAdicionar}>
+        <TouchableOpacity
+          style={styles.botaoAdicionar}
+          activeOpacity={0.9}
+        >
+          <Text style={styles.textoBotaoAdicionar}>
+            Adicionar produto
+          </Text>
+        </TouchableOpacity>
+      </View>
 
-            <TouchableOpacity
-              disabled={paginaAtual === totalPaginas}
-              onPress={() =>
-                onAtualizarFiltros({ pagina: paginaAtual + 1 })
-              }
-            >
-              <Text
-                style={[
-                  styles.paginaBotao,
-                  paginaAtual === totalPaginas &&
-                    styles.paginaDesativada,
-                ]}
-              >
-                Próxima
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </ScrollView>
+      {/* Navegação inferior */}
+      <BottomNavigation
+        telaAtiva="gestao"
+        onNavegar={onNavegar}
+      />
 
-      <BottomNavigation telaAtiva="gestao" onNavegar={onNavegar}/>
     </SafeAreaView>
   );
 }
@@ -293,91 +374,146 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#E7F0E5',
   },
+
   conteudo: {
     paddingHorizontal: 20,
     paddingTop: 15,
-    paddingBottom: 25,
+    paddingBottom: 15,
   },
+
   titulo: {
     fontSize: 25,
     fontWeight: '600',
     color: '#402044',
   },
+
   subtitulo: {
     fontSize: 13,
     color: '#57465A',
     marginTop: 5,
     marginBottom: 15,
   },
+
   busca: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     height: 48,
     paddingHorizontal: 15,
     fontSize: 14,
-    marginBottom: 18,
+    marginBottom: 15,
     color: '#402044',
   },
-  rotulo: {
-    fontSize: 13,
+
+  // Linha dos dois filtros.
+  linhaFiltros: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 18,
+    alignItems: 'flex-start',
+  },
+
+  filtroContainer: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  conteudoFiltro: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  botaoFiltro: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 13,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    minHeight: 62,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 5,
+  },
+
+  rotuloFiltro: {
+    fontSize: 12,
     fontWeight: '600',
     color: '#402044',
-    marginBottom: 8,
   },
-  opcoes: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 7,
-    marginBottom: 15,
+
+  valorFiltro: {
+    fontSize: 11,
+    color: '#827787',
+    marginTop: 4,
   },
-  opcao: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 15,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-  },
-  opcaoAtiva: {
-    backgroundColor: '#063D2E',
-  },
-  textoOpcao: {
-    fontSize: 12,
+
+  setaFiltro: {
+    fontSize: 19,
     color: '#402044',
   },
-  textoOpcaoAtiva: {
-    color: '#FFFFFF',
+
+  // Opções dos filtros.
+  listaOpcoesFiltro: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 13,
+    marginTop: 5,
+    paddingVertical: 5,
   },
+
+  itemFiltro: {
+    paddingHorizontal: 10,
+    paddingVertical: 11,
+  },
+
+  textoItemFiltro: {
+    fontSize: 11,
+    color: '#402044',
+  },
+
+  textoItemFiltroAtivo: {
+    color: '#063D2E',
+    fontWeight: '700',
+  },
+
   resultados: {
     fontSize: 12,
     color: '#57465A',
     marginBottom: 10,
   },
+
+  // Cards dos produtos.
   card: {
     backgroundColor: '#F8E9CC',
     borderRadius: 15,
     padding: 13,
     marginBottom: 9,
   },
+
   cardLinha: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     flexWrap: 'wrap',
     gap: 5,
   },
+
   nomeProduto: {
     color: '#402044',
     fontSize: 14,
     fontWeight: '600',
   },
+
   preco: {
     color: '#402044',
     fontSize: 13,
     fontWeight: '600',
   },
+
   informacao: {
     color: '#6B5D6D',
     fontSize: 12,
     marginTop: 6,
   },
+
+  // Estado vazio.
   vazio: {
     backgroundColor: '#FFFFFF',
     padding: 20,
@@ -385,17 +521,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 5,
   },
+
   vazioTitulo: {
     color: '#402044',
     fontSize: 15,
     fontWeight: '600',
   },
+
   vazioTexto: {
     color: '#6B5D6D',
     fontSize: 12,
     textAlign: 'center',
     marginTop: 7,
   },
+
   botaoLimpar: {
     backgroundColor: '#063D2E',
     borderRadius: 12,
@@ -404,28 +543,52 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
+
   botaoLimparTexto: {
     color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '600',
   },
-  paginacao: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 15,
+
+  // Card de categorias.
+  cardCategorias: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 15,
+    padding: 14,
+    marginTop: 2,
     marginBottom: 10,
   },
-  paginaBotao: {
-    color: '#063D2E',
-    fontSize: 12,
+
+  tituloCategorias: {
+    color: '#402044',
+    fontSize: 14,
     fontWeight: '600',
   },
-  paginaDesativada: {
-    color: '#A9A1AA',
-  },
-  paginaTexto: {
-    color: '#57465A',
+
+  descricaoCategorias: {
+    color: '#6B5D6D',
     fontSize: 12,
+    marginTop: 6,
+  },
+
+  // Área fixa do botão adicionar.
+  areaAdicionar: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 12,
+    backgroundColor: '#E7F0E5',
+  },
+
+  botaoAdicionar: {
+    backgroundColor: '#063D2E',
+    borderRadius: 13,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+
+  textoBotaoAdicionar: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
