@@ -54,3 +54,6 @@ jobs:
         run: |
           chmod +x ./mvnw
           ./mvnw --batch-mode --no-transfer-progress verify
+
+      - name: Validar imagem Docker da API
+        run: docker build -t ergane-api:ci ./apps/api
