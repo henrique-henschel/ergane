@@ -2,11 +2,12 @@ name: CI - API
 
 on:
   pull_request:
+    branches: [main, develop]
     paths:
       - 'apps/api/**'
       - '.github/workflows/api-ci.yml'
   push:
-    branches: [main]
+    branches: [main, develop]
     paths:
       - 'apps/api/**'
       - '.github/workflows/api-ci.yml'
@@ -53,3 +54,6 @@ jobs:
         run: |
           chmod +x ./mvnw
           ./mvnw --batch-mode --no-transfer-progress verify
+
+      - name: Validar imagem Docker da API
+        run: docker build -t ergane-api:ci ./apps/api
