@@ -18,6 +18,7 @@ export default function VendaRegistrada({
   valorTotal,
   registro,
   onNovaVenda,
+  onAbrirHistorico,
   onNavegar,
 }) {
   return (
@@ -76,7 +77,10 @@ export default function VendaRegistrada({
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.botaoHistorico}>
+          <TouchableOpacity 
+            style={styles.botaoHistorico}
+            onPress={onAbrirHistorico}
+          >
             <Text style={styles.textoBotaoHistorico}>
               Ver histórico
             </Text>

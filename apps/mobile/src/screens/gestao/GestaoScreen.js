@@ -6,6 +6,7 @@ import BottomNavigation from '../../components/BottomNavigation';
 export default function GestaoScreen({
   onAbrirCatalogo,
   onAbrirMetas,
+  onAbrirHistorico,
   onVoltarInicio,
   onNavegar,
 }) {
@@ -21,7 +22,7 @@ export default function GestaoScreen({
         </Text>
 
         <View style={styles.lista}>
-          <TouchableOpacity style={styles.card}>
+          <TouchableOpacity style={styles.card} onPress={onAbrirHistorico}>
             <Text style={styles.cardTitulo}>Vendas ›</Text>
             <Text style={styles.cardDescricao}>
               Histórico, correções e conferência

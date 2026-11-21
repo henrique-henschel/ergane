@@ -2,13 +2,23 @@ import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 
 import GestaoScreen from './src/screens/gestao/GestaoScreen';
+
 import CatalogoScreen from './src/screens/gestao/estoque/CatalogoScreen';
 import DetalhesScreen from './src/screens/gestao/estoque/DetalhesScreen';
+
+import Historico from './src/screens/gestao/historico/Historico';
+import DetalhesHistorico from './src/screens/gestao/historico/DetalhesHistorico';
+
+
 import Vender from './src/screens/venda/Vender';
+
 import RevisarVenda from './src/screens/venda/RevisarVenda';
+import VendaRegistradaScreen from './src/screens/venda/VendaRegistrada';
+
+
 import EntradaScreen from './src/screens/EntradaScreen';
 import CombinacoesScreen from './src/screens/CombinacoesScreen';
-import VendaRegistradaScreen from './src/screens/venda/VendaRegistrada';
+
 
 import produtosIniciais from './src/mocks/produtos';
 
@@ -19,6 +29,7 @@ export default function App() {
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
   const [proximoRegistro, setProximoRegistro] = useState(1);
   const [vendaRegistrada, setVendaRegistrada] = useState(null);
+  const [vendaSelecionada, setVendaSelecionada] = useState(null);
   
   const [filtros, setFiltros] = useState({
     nome: '',
@@ -39,6 +50,15 @@ export default function App() {
 
   function abrirCombinacoes() {
     setTelaAtual('combinacoes');
+  }
+
+  function abrirHistorico() {
+    setTelaAtual('historico');
+  }
+
+  function abrirDetalhesHistorico(venda) {
+    setVendaSelecionada(venda);
+    setTelaAtual('detalhesHistorico');
   }
 
   function atualizarFiltros(novosFiltros) {
@@ -155,6 +175,7 @@ export default function App() {
         <GestaoScreen
           onAbrirCatalogo={abrirCatalogo}
           onAbrirMetas={abrirMetas}
+          onAbrirHistorico={abrirHistorico}
           onVoltarInicio={voltarInicio}
           onNavegar={navegarPara}
         />
@@ -175,6 +196,24 @@ export default function App() {
         <DetalhesScreen
           produto={produtoSelecionado}
           onVoltar={() => setTelaAtual('catalogo')}
+        />
+      )}
+
+      {telaAtual === 'historico' && (
+        <Historico
+          onVoltar={() => setTelaAtual('gestao')}
+          onAbrirFiltros={() => {
+            alert('A tela de filtros será implementada na próxima etapa.');
+          }}
+          onSelecionarVenda={abrirDetalhesHistorico}
+          onNavegar={navegarPara}
+        />
+      )}
+
+      {telaAtual === 'detalhesHistorico' && vendaSelecionada && (
+        <DetalhesHistorico
+          venda={vendaSelecionada}
+          onVoltar={() => setTelaAtual('historico')}
         />
       )}
 
@@ -204,6 +243,7 @@ export default function App() {
           valorTotal={vendaRegistrada.valorTotal}
           registro={vendaRegistrada.registro}
           onNovaVenda={iniciarNovaVenda}
+          onAbrirHistorico={abrirHistorico}
           onNavegar={navegarPara}
         />
       )}
