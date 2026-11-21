@@ -18,7 +18,7 @@ A implementação segue os seguintes critérios:
 ## Alternativas consideradas
 
 - **SERIAL / BIGINT sequencial autoincremento:** descartado porque não permite que dispositivos móveis offline criem entidades com IDs definitivos antes de sincronizar, revelaria o volume de dados de cada negócio nas URLs públicas e facilitaria ataques de enumeração.
-- **Chave primária composta (ex.: negócio_id + id sequencial):** adiciona grande complexidade de mapeamento no JPA/Hibernate (`@EmbeddedId` ou `@IdClass`), dificulta o consumo em rotas REST padronizadas e prejudica a integração com bibliotecas de front-end.
+- **Chave primária composta (ex.: conta_id + id sequencial):** adiciona grande complexidade de mapeamento no JPA/Hibernate (`@EmbeddedId` ou `@IdClass`), dificulta o consumo em rotas REST padronizadas e prejudica a integração com bibliotecas de front-end.
 
 ## Consequências
 

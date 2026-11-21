@@ -16,10 +16,14 @@ public class Categoria {
     private UUID id;
 
     @Column(nullable = false, updatable = false)
-    private UUID negocioId;
+    private UUID contaId;
 
     @Column(nullable = false, length = 100)
     private String nome;
+
+    @Version
+    @Column(nullable = false)
+    private Long versao;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -33,8 +37,8 @@ public class Categoria {
 
     }
 
-    public Categoria(UUID negocioId, String nome) {
-        this.negocioId = negocioId;
+    public Categoria(UUID contaId, String nome) {
+        this.contaId = contaId;
         this.nome = nome;
     }
 
@@ -46,12 +50,16 @@ public class Categoria {
         return id;
     }
 
-    public UUID getNegocioId() {
-        return negocioId;
+    public UUID getContaId() {
+        return contaId;
     }
 
     public String getNome() {
         return nome;
+    }
+
+    public Long getVersao() {
+        return versao;
     }
 
     public Instant getCriadoEm() {

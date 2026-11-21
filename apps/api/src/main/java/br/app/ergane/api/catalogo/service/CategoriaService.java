@@ -13,8 +13,8 @@ import java.util.UUID;
 @Service
 public class CategoriaService {
 
-    // Temporario: sera trocado pelo negocio do usuario logado no UC01
-    private static final UUID NEGOCIO_FIXO = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    // Temporario: sera trocado pela conta do usuario logado no UC01
+    private static final UUID CONTA_FIXA = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
     private final CategoriaRepository categoriaRepository;
 
@@ -24,12 +24,12 @@ public class CategoriaService {
 
     @Transactional(readOnly = true)
     public List<Categoria> listar() {
-        return categoriaRepository.findAllByNegocioIdOrderByNomeAsc(NEGOCIO_FIXO);
+        return categoriaRepository.findAllByContaIdOrderByNomeAsc(CONTA_FIXA);
     }
 
     @Transactional(readOnly = true)
     public Categoria buscar(UUID id) {
-        return categoriaRepository.findByNegocioIdAndId(NEGOCIO_FIXO, id)
+        return categoriaRepository.findByContaIdAndId(CONTA_FIXA, id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Erro! Categoria não encontrada."));
     }
 
@@ -37,11 +37,11 @@ public class CategoriaService {
     public Categoria criar(String nome) {
         String nomeLimpo = nome.trim();
 
-        if (categoriaRepository.existsByNegocioIdAndNomeIgnoreCase(NEGOCIO_FIXO, nomeLimpo)) {
+        if (categoriaRepository.existsByContaIdAndNomeIgnoreCase(CONTA_FIXA, nomeLimpo)) {
             throw new RegraNegocioException("Erro! Já existe uma categoria com este nome.");
         }
 
-        return categoriaRepository.save(new Categoria(NEGOCIO_FIXO, nomeLimpo));
+        return categoriaRepository.save(new Categoria(CONTA_FIXA, nomeLimpo));
     }
 
     @Transactional
@@ -49,7 +49,7 @@ public class CategoriaService {
         Categoria categoria = buscar(id);
         String nomeLimpo = nome.trim();
 
-        if (categoriaRepository.existsByNegocioIdAndNomeIgnoreCaseAndIdNot(NEGOCIO_FIXO, nomeLimpo, id)) {
+        if (categoriaRepository.existsByContaIdAndNomeIgnoreCaseAndIdNot(CONTA_FIXA, nomeLimpo, id)) {
             throw new RegraNegocioException("Erro! Já existe uma categoria com este nome.");
         }
 

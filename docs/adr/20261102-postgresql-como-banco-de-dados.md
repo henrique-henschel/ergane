@@ -16,7 +16,7 @@ A aplicação delega garantias críticas de consistência e integridade ao próp
 - Recursos avançados do PostgreSQL já empregados no schema:
   - Índices únicos baseados em expressões funcionais (ex.: `LOWER(nome)` em categorias e `(LOWER(nome), LOWER(COALESCE(diferenciador, '')))` em produtos);
   - Índices parciais com filtro condicional (ex.: `WHERE arquivado_em IS NULL`), permitindo que um novo produto utilize o nome de um produto previamente arquivado;
-  - Chaves estrangeiras compostas (ex.: `(negocio_id, categoria_id) REFERENCES categorias(negocio_id, id)`), impedindo em nível de banco o relacionamento cruzado entre entidades de negócios distintos.
+  - Chaves estrangeiras compostas (ex.: `(conta_id, categoria_id) REFERENCES categorias(conta_id, id)`), impedindo em nível de banco o relacionamento cruzado entre entidades de negócios distintos.
 - Ambiente local padronizado pelo serviço `db` com imagem `postgres:17` no arquivo `docker-compose.yml`.
 
 ## Alternativas consideradas

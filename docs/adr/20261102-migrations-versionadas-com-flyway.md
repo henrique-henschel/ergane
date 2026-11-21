@@ -13,7 +13,7 @@ As diretrizes adotadas compreendem:
 - O schema é inteiramente definido em arquivos SQL na pasta `apps/api/src/main/resources/db/migration/`, seguindo a convenção de nomes `V{N}__{descricao}.sql` e escritos em SQL puro;
 - O Hibernate atua unicamente validando o mapeamento das entidades contra as tabelas reais no startup da aplicação (`spring.jpa.hibernate.ddl-auto=validate`), abortando a inicialização caso haja qualquer divergência de tipos, colunas ou constraints;
 - Princípio da imutabilidade: uma migration aplicada e versionada nunca é editada; toda nova alteração, correção ou ajuste estrutural exige a criação de uma nova migration com numeração sequencial subsequente;
-- Cargas de dados iniciais ou essenciais para desenvolvimento local (como a criação do negócio fixo em `V2__dados_iniciais_dev.sql`) são provisionadas por migrations dedicadas e com instruções idempotentes (`ON CONFLICT DO NOTHING`).
+- Cargas de dados iniciais ou essenciais para desenvolvimento local (como a criação da conta fixa em `V2__dados_iniciais_dev.sql`) são provisionadas por migrations dedicadas e com instruções idempotentes (`ON CONFLICT DO NOTHING`).
 
 ## Alternativas consideradas
 

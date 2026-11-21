@@ -10,12 +10,12 @@ import java.util.UUID;
 
 public interface CategoriaRepository extends JpaRepository<Categoria, UUID> {
 
-    List<Categoria> findAllByNegocioIdOrderByNomeAsc(UUID negocioId);
+    List<Categoria> findAllByContaIdOrderByNomeAsc(UUID contaId);
 
-    Optional<Categoria> findByNegocioIdAndId(UUID negocioId, UUID id);
+    Optional<Categoria> findByContaIdAndId(UUID contaId, UUID id);
 
-    boolean existsByNegocioIdAndNomeIgnoreCase(UUID negocioId, String nome);
+    boolean existsByContaIdAndNomeIgnoreCase(UUID contaId, String nome);
 
-    boolean existsByNegocioIdAndNomeIgnoreCaseAndIdNot(UUID negocioId, String nome, UUID id);
+    boolean existsByContaIdAndNomeIgnoreCaseAndIdNot(UUID contaId, String nome, UUID id);
 
 }
