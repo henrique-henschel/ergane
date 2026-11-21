@@ -1,8 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView } from 'react-native';
 
-import Header from '../components/Header';
-
-import BottomNavigation from '../components/BottomNavigation';
+import Header from '../../components/Header';
+import BottomNavigation from '../../components/BottomNavigation';
 
 export default function GestaoScreen({
   onAbrirCatalogo,

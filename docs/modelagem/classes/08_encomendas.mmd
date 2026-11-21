@@ -1,0 +1,62 @@
+classDiagram
+direction TB
+
+%% UC14–UC19; uma descrição basta, sem itens cadastrados; transições D04.
+
+class Conta {
+        +id: UUID
+        +nome: String
+        +fusoHorario: ZoneId
+        +ativa: Boolean
+        +criadaEm: Instant
+    }
+
+class Encomenda {
+        +id: UUID
+        +contaId: UUID
+        +autorId: UUID
+        +referenciaPedido: String
+        +contatoOpcional: String?
+        +descricao: String?
+        +totalCombinado: Dinheiro
+        +entregaPrevista: LocalDate
+        +situacao: String
+        +vendaGeradaId: UUID?
+        +versao: Long
+        +criadaEm: Instant
+    }
+
+class ItemEncomenda {
+        +id: UUID
+        +produtoId: UUID?
+        +descricaoSnapshot: String
+        +quantidade: Quantidade?
+        +precoUnitario: Dinheiro?
+    }
+
+class Produto {
+        +id: UUID
+        +contaId: UUID
+        +categoriaId: UUID?
+        +nome: String
+        +diferenciador: String?
+        +descricao: String?
+        +precoVenda: Dinheiro
+        +custoUnitario: Dinheiro?
+        +validade: LocalDate?
+        +arquivadoEm: Instant?
+        +versao: Long
+        +criadoPorId: UUID
+        +criadoEm: Instant
+    }
+
+class Ocorrencia {
+        <<valueObject>>
+        +data: LocalDate
+        +hora: LocalTime?
+        +fuso: ZoneId?
+    }
+
+Conta "1" -- "0..*" Encomenda
+Encomenda "1" *-- "0..*" ItemEncomenda
+ItemEncomenda "0..*" --> "0..1" Produto : opcional

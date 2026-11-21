@@ -1,0 +1,135 @@
+classDiagram
+direction TB
+
+namespace CONSISTENCIA {
+    class OperacaoIdempotente {
+        +id: UUID
+        +contaId: UUID
+        +chave: String
+        +tipo: String
+        +hashConteudo: String
+        +estado: String
+        +resultadoId: UUID?
+        +respostaCanonica: Json?
+        +registradaEm: Instant
+    }
+    class AlteracaoAuditada {
+        +id: UUID
+        +contaId: UUID
+        +entidadeTipo: String
+        +entidadeId: UUID
+        +versaoAnterior: Long?
+        +versaoNova: Long
+        +valoresAnteriores: Json?
+        +valoresPosteriores: Json?
+        +autorId: UUID
+        +ocorridaEm: Instant
+        +motivo: String?
+    }
+}
+
+namespace OFFLINE_LOCAL {
+    class OperacaoLocal {
+        <<local>>
+        +id: UUID
+        +contaId: UUID
+        +usuarioId: UUID
+        +tipo: String
+        +payload: Json
+        +hashConteudo: String
+        +estado: String
+        +criadaEm: Instant
+        +ultimaTentativaEm: Instant?
+    }
+    class ConflitoSincronizacao {
+        <<local>>
+        +id: UUID
+        +operacaoLocalId: UUID
+        +codigoMotivo: String
+        +detalhes: Json
+        +estado: String
+        +decisao: String?
+        +resolvidoEm: Instant?
+    }
+    class CacheNegocio {
+        <<local>>
+        +contaId: UUID
+        +usuarioAutorizadoId: UUID
+        +ultimaSincronizacaoEm: Instant?
+        +periodoHistoricoDisponivel: String?
+    }
+}
+
+namespace ACOMPANHAMENTO {
+    class MetaVendas {
+        +id: UUID
+        +contaId: UUID
+        +inicio: LocalDate
+        +fim: LocalDate
+        +valorAlvo: Dinheiro
+        +versao: Long
+    }
+    class PreferenciaNotificacao {
+        +id: UUID
+        +contaId: UUID
+        +usuarioId: UUID?
+        +tipo: String
+        +canal: String
+        +habilitada: Boolean
+        +versao: Long
+    }
+    class EventoAviso {
+        +id: UUID
+        +contaId: UUID
+        +tipo: String
+        +chaveDeduplicacao: String
+        +referenciaId: UUID?
+        +calculadoEm: Instant
+        +dadosJustificativa: Json
+    }
+    class CoberturaDados {
+        <<projecao>>
+        +inicio: LocalDate
+        +fim: LocalDate
+        +temCacheCompleto: Boolean
+        +registrosElegiveis: Long
+        +registrosSemHora: Long
+        +limitacoes: List~String~
+    }
+    class IndicadoresPeriodo {
+        <<projecao>>
+        +vendasValidas: Dinheiro
+        +recebimentosInformados: Dinheiro
+        +devolucoesInformadas: Dinheiro
+        +pendenciasNaConsulta: Dinheiro?
+        +consultadoEm: Instant
+        +cobertura: CoberturaDados
+    }
+    class SugestaoReposicao {
+        <<projecao>>
+        +produtoId: UUID
+        +quantidadeSugerida: Quantidade?
+        +motivoOuIndisponibilidade: String
+        +baseEPeriodo: String
+    }
+    class CombinacaoObservada {
+        <<projecao>>
+        +produtoIds: Set~UUID~
+        +ocorrencias: Long
+        +transacoesElegiveis: Long
+        +cobertura: CoberturaDados
+    }
+    class CalculoTroco {
+        <<servico>>
+        +calcular(devido: Dinheiro, entregue: Dinheiro) ResultadoTroco
+    }
+}
+
+OperacaoLocal "1" --> "0..1" ConflitoSincronizacao : falha de envio
+CacheNegocio "1" -- "0..*" OperacaoLocal : isola
+OperacaoLocal ..> OperacaoIdempotente : mesma chave ao enviar
+OperacaoIdempotente ..> AlteracaoAuditada : efeito persistido
+MetaVendas ..> EventoAviso : atingimento D10
+PreferenciaNotificacao ..> EventoAviso : filtra canal D10
+IndicadoresPeriodo *-- CoberturaDados
+CombinacaoObservada --> CoberturaDados
