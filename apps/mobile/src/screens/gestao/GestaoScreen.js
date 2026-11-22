@@ -6,6 +6,7 @@ import BottomNavigation from '../../components/BottomNavigation';
 export default function GestaoScreen({
   onAbrirCatalogo,
   onAbrirMetas,
+  onAbrirTroco,
   onVoltarInicio,
   onNavegar,
 }) {
@@ -40,10 +41,13 @@ export default function GestaoScreen({
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.card}>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={onAbrirTroco}
+          >
             <Text style={styles.cardTitulo}>Financeiro ›</Text>
             <Text style={styles.cardDescricao}>
-              Recebimentos e valores pendentes
+              Troco sem complicar e recebimentos
             </Text>
           </TouchableOpacity>
 

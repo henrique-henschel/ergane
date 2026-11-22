@@ -24,6 +24,7 @@ export default function RevisarVenda({
   carrinho,
   onVoltar,
   onConfirmarVenda,
+  onAbrirTroco,
 }) {
   const [formaPagamento, setFormaPagamento] = useState('');
   const [valorRecebido, setValorRecebido] = useState('');
@@ -216,15 +217,30 @@ export default function RevisarVenda({
           />
 
           {/* Troco */}
-          <Text style={styles.rotuloCampo}>
-            Troco
-          </Text>
+          <View style={styles.cabecalhoCampoTroco}>
+            <Text style={styles.rotuloCampoTroco}>
+              Troco
+            </Text>
+            {dinheiroAtivo && onAbrirTroco && (
+              <TouchableOpacity onPress={() => onAbrirTroco({ valorTotal })}>
+                <Text style={styles.linkTroco}>Troco sem complicar ›</Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
-          <View style={styles.campoTroco}>
+          <TouchableOpacity
+            style={styles.campoTroco}
+            onPress={() => {
+              if (dinheiroAtivo && onAbrirTroco) {
+                onAbrirTroco({ valorTotal });
+              }
+            }}
+            activeOpacity={dinheiroAtivo && onAbrirTroco ? 0.7 : 1}
+          >
             <Text style={styles.valorTroco}>
               {formatarPreco(dinheiroAtivo ? valorTroco : 0)}
             </Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -400,6 +416,23 @@ const styles = StyleSheet.create({
   },
 
   // Campo Troco
+  cabecalhoCampoTroco: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 14,
+    marginBottom: 7,
+  },
+  rotuloCampoTroco: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#402044',
+  },
+  linkTroco: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#063D2E',
+  },
   campoTroco: {
     backgroundColor: '#E5DCE8',
     borderRadius: 10,
