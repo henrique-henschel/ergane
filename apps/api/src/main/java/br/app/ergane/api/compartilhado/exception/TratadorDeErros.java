@@ -1,5 +1,11 @@
 package br.app.ergane.api.compartilhado.exception;
 
+import br.app.ergane.api.identidade.exception.AutenticacaoIndisponivelException;
+import br.app.ergane.api.identidade.exception.FalhaAutenticacaoException;
+import br.app.ergane.api.identidade.exception.LoginBloqueadoException;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -13,6 +19,28 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class TratadorDeErros {
+
+    @ExceptionHandler(FalhaAutenticacaoException.class)
+    public ResponseEntity<ProblemDetail> autenticacao(FalhaAutenticacaoException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.PRAGMA, "no-cache")
+                .body(ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage()));
+    }
+
+    @ExceptionHandler(LoginBloqueadoException.class)
+    public ResponseEntity<ProblemDetail> tentativas(LoginBloqueadoException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.PRAGMA, "no-cache")
+                .header(HttpHeaders.RETRY_AFTER, Long.toString(ex.getSegundosEspera()))
+                .body(ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage()));
+    }
+
+    @ExceptionHandler(AutenticacaoIndisponivelException.class)
+    public ResponseEntity<ProblemDetail> autenticacaoIndisponivel(AutenticacaoIndisponivelException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.PRAGMA, "no-cache")
+                .body(ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage()));
+    }
 
     @ExceptionHandler(RecursoNaoEncontradoException.class)
     public ProblemDetail naoEncontrado(RecursoNaoEncontradoException ex) {

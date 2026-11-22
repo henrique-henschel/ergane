@@ -33,6 +33,15 @@ public class Conta {
     }
 
     public Conta(String nome, ZoneId fusoHorario) {
+        if (nome == null || nome.isBlank()) {
+            throw new IllegalArgumentException("O nome do negócio é obrigatório.");
+        }
+        if (nome.codePointCount(0, nome.length()) > 100) {
+            throw new IllegalArgumentException("O nome do negócio deve ter no máximo 100 caracteres.");
+        }
+        if (fusoHorario == null) {
+            throw new IllegalArgumentException("O fuso horário do negócio é obrigatório.");
+        }
         this.nome = nome;
         this.fusoHorario = fusoHorario;
         this.ativa = true;
