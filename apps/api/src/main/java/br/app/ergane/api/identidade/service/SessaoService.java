@@ -10,6 +10,7 @@ import br.app.ergane.api.identidade.model.Usuario;
 import br.app.ergane.api.identidade.repository.SessaoRepository;
 import br.app.ergane.api.identidade.repository.TentativaLoginRepository;
 import br.app.ergane.api.identidade.repository.UsuarioRepository;
+import br.app.ergane.api.negocio.service.NegocioService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,15 +31,18 @@ public class SessaoService {
     private final SessaoRepository sessaoRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenSessaoService tokens;
+    private final NegocioService negocioService;
     private final String hashSimulado;
 
     public SessaoService(UsuarioRepository usuarioRepository, TentativaLoginRepository tentativaRepository,
-                        SessaoRepository sessaoRepository, PasswordEncoder passwordEncoder, TokenSessaoService tokens) {
+                        SessaoRepository sessaoRepository, PasswordEncoder passwordEncoder, TokenSessaoService tokens,
+                        NegocioService negocioService) {
         this.usuarioRepository = usuarioRepository;
         this.tentativaRepository = tentativaRepository;
         this.sessaoRepository = sessaoRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokens = tokens;
+        this.negocioService = negocioService;
         this.hashSimulado = passwordEncoder.encode(UUID.randomUUID().toString());
     }
 
@@ -75,9 +79,12 @@ public class SessaoService {
         }
 
         String refresh = tokens.gerarRefreshToken();
-        Sessao sessao = sessaoRepository.saveAndFlush(new Sessao(usuario.getId(), UUID.randomUUID(),
-                tokens.calcularHash(refresh), agora, agora.plus(Duration.ofDays(30)), agora.plus(Duration.ofDays(90))));
-        SessaoResponse response = tokens.emitir(sessao, refresh, agora);
+        Sessao sessao = new Sessao(usuario.getId(), UUID.randomUUID(),
+                tokens.calcularHash(refresh), agora, agora.plus(Duration.ofDays(30)), agora.plus(Duration.ofDays(90)));
+        usuarioRepository.buscarUltimoNegocioPorId(usuario.getId())
+                .filter(negocioId -> negocioService.temAcesso(usuario.getId(), negocioId))
+                .ifPresent(sessao::selecionarNegocio);
+        SessaoResponse response = tokens.emitir(sessaoRepository.saveAndFlush(sessao), refresh, agora);
         tentativa.reiniciar(agora);
         return ResultadoLogin.sucesso(response);
     }

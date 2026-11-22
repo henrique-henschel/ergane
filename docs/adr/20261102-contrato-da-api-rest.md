@@ -15,13 +15,15 @@ O contrato estabelece as seguintes convenções:
 - Códigos de status HTTP padronizados:
   - `200 OK`: consultas e atualizações síncronas realizadas com sucesso;
   - `201 Created`: criação bem-sucedida de recurso, acompanhada obrigatoriamente do cabeçalho `Location` contendo o URI do novo registro;
-  - `204 No Content`: exclusões físicas efetuadas com sucesso;
+  - `204 No Content`: exclusões físicas ou ações concluídas sem representação de resposta, como a revogação de um vínculo;
   - `400 Bad Request`: erros de validação sintática ou de campos obrigatórios;
   - `404 Not Found`: recurso inexistente ou pertencente a outro negócio (RT01);
   - `409 Conflict`: violações de regras de negócio ou de integridade no banco (conflito de unicidade).
 - Tratamento global de erros centralizado via `@RestControllerAdvice` (`TratadorDeErros`), emitindo instâncias de `ProblemDetail` (RFC 9457). Para erros de validação, adiciona-se a propriedade `campos` mapeando o nome de cada campo à respectiva mensagem amigável de erro;
 - Ações operacionais que não representam um CRUD tradicional utilizam sub-recursos expressos com verbos em métodos POST (ex.: `POST /api/produtos/{id}/arquivar`), explicitando que a ação não constitui uma deleção HTTP DELETE;
 - Decisão pendente de definição com a equipe: inclusão de versionamento explícito no caminho da URL (ex.: `/api/v1/produtos`). No estágio atual do MVP, as rotas utilizam o prefixo direto `/api`.
+
+As rotas de sessão, contexto e revogação de vínculo são detalhadas no [contrato do UC01](../requisitos/uc01-api.md).
 
 ## Alternativas consideradas
 

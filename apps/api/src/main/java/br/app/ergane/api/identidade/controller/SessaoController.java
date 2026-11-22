@@ -85,6 +85,13 @@ public class SessaoController {
         }
     }
 
+    @GetMapping("/atual/negocio")
+    public ResponseEntity<NegocioSelecionadoResponse> consultarNegocio(
+            @AuthenticationPrincipal UsuarioAutenticado usuario) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.PRAGMA, "no-cache").body(selecaoNegocioService.consultar(usuario));
+    }
+
     @PutMapping("/atual/negocio")
     public ResponseEntity<NegocioSelecionadoResponse> selecionarNegocio(
             @AuthenticationPrincipal UsuarioAutenticado usuario,

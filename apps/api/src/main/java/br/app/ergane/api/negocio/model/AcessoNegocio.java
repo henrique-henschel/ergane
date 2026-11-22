@@ -75,6 +75,10 @@ public class AcessoNegocio {
         return ativo;
     }
 
+    public void revogar() {
+        ativo = false;
+    }
+
     public Instant getCriadoEm() {
         return criadoEm;
     }

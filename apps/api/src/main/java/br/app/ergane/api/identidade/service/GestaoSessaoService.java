@@ -94,7 +94,7 @@ public class GestaoSessaoService {
         return ResultadoAcao.sucesso(new RevogacaoTodasSessoesResponse(quantidade));
     }
 
-    private Confirmacao confirmarSenha(UsuarioAutenticado autenticado, String senha) {
+    Confirmacao confirmarSenha(UsuarioAutenticado autenticado, String senha) {
         String email = usuarioRepository.buscarEmailPorId(autenticado.usuarioId())
                 .orElseThrow(FalhaAutenticacaoException::new);
         tentativaRepository.criarSeAusente(email, Instant.now());
@@ -145,7 +145,7 @@ public class GestaoSessaoService {
         return Math.max(1, restante.getSeconds() + (restante.getNano() > 0 ? 1 : 0));
     }
 
-    private record Confirmacao(SituacaoAcao situacao, long segundosEspera) {
+    record Confirmacao(SituacaoAcao situacao, long segundosEspera) {
     }
 
     public enum SituacaoAcao {

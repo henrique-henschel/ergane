@@ -2,6 +2,13 @@
 
 ## 1. Autenticação de Usuários
 
+### Acesso e autorização no UC01
+
+- O usuário entra com e-mail e senha. Uma mesma identidade pode ter vínculos com vários negócios, cada um com papel próprio.
+- Apenas vínculos ativos autorizam acesso. O contexto da sessão é validado novamente nas operações do negócio. Em novo login, o último negócio só é restaurado se o vínculo continuar ativo.
+- Proprietários e administradores podem revogar vínculos de funcionários. Apenas o proprietário pode revogar o vínculo de um administrador. A revogação exige confirmação de senha e mantém as sessões válidas para outros negócios.
+- A biometria do UC01 é um desbloqueio local opcional do dispositivo. As regras de validação cadastral de CNPJ abaixo tratam de um fluxo distinto.
+
 ### RN01 - Validar CNPJ
 
 - **Descrição:** O sistema deve verificar e validar o CNPJ do usuário para garantir que o usuário é uma pessoa verificada e não um vendedor ambulante.

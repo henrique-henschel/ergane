@@ -44,7 +44,7 @@ Cada caso informa: objetivo e gatilho; requisitos; entradas e resultado; fluxo p
 
 ## Decisões a validar antes dos casos afetados
 
-**D01 — Acesso e permissões.** A fonte exige alternativa à biometria e isolamento, mas não define cadastro, login, recuperação, papéis, criação/seleção de negócio ou duração de sessão offline. Definir esses contratos como pré-requisito; não inventar módulo de administração completo. Afeta UC01 e autorização dos demais.
+**D01 — Acesso e permissões.** Uma identidade pode acessar vários negócios, com um papel por vínculo: proprietário, administrador ou funcionário. O acesso usa e-mail e senha, com proteção progressiva contra tentativas e sessões persistentes com renovação segura. O usuário pode alternar entre negócios autorizados e retomar o último negócio ainda autorizado. Operações críticas exigem confirmação de senha. A revogação de um vínculo impede novos acessos ao negócio e preserva as sessões válidas para os demais. D01.15 permanece pendente.
 
 **D02 — Valores, quantidades e datas.** Definir moeda, escala, arredondamento, aceitação de preço zero, unidade/fracionamento, fuso, início de semana e regras para datas futuras. Proposta inicial para validação: BRL com duas casas e fuso configurado por negócio; não impor esses parâmetros sem decisão. Afeta catálogo, vendas, encomendas e métricas.
 
@@ -93,6 +93,8 @@ Os casos estão agrupados por tema. Os IDs UC são independentes dos IDs R e dev
 
 **Alternativas e falhas:** Biometria ausente, negada ou cancelada: oferecer alternativa sem desbloquear automaticamente. Sessão expirada: solicitar nova autenticação. Offline: somente acesso local previamente autorizado conforme D11; nunca presumir nova autorização.
 
+**Persistência no dispositivo:** O aplicativo deve manter a sessão de um login anterior disponível localmente, inclusive ao reabrir sem rede. D11 ainda define os limites do acesso offline, a validade da autorização local e a sincronização.
+
 **Pós-condições:** Sucesso: contexto autorizado ativo. Falha: dados protegidos permanecem inacessíveis.
 
 **Critérios de aceite**
@@ -101,7 +103,9 @@ Os casos estão agrupados por tema. Os IDs UC são independentes dos IDs R e dev
 - CA2: Dada biometria rejeitada, então nenhuma área protegida é liberada.
 - CA3: Dado identificador de outro negócio, quando consultado diretamente, então o backend nega acesso e não retorna dados.
 
-**Contrato funcional proposto:** ValidarSessao/ObterContextoAutorizado; integração local com biometria. O backend não recebe impressão digital ou imagem facial.
+**Contrato funcional:** A API autentica a identidade, valida a sessão e verifica o vínculo com o negócio em cada requisição protegida por contexto. O aplicativo usa a biometria nativa para desbloqueio local opcional após inatividade. Dados biométricos permanecem no dispositivo. Consulte o [contrato REST do UC01](uc01-api.md).
+
+**Escopo do IX-107:** Cadastro com negócio opcional, login, renovação, gestão de sessões, consulta de negócios autorizados, seleção e restauração de contexto e revogação de vínculos. A recuperação por link temporário de uso único, os convites por e-mail, a transferência do proprietário único e a verificação de e-mail pertencem a entregas próprias.
 
 **Subtarefas sugeridas**
 
