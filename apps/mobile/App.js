@@ -9,6 +9,7 @@ import RevisarVenda from './src/screens/venda/RevisarVenda';
 import EntradaScreen from './src/screens/EntradaScreen';
 import CombinacoesScreen from './src/screens/CombinacoesScreen';
 import VendaRegistradaScreen from './src/screens/venda/VendaRegistrada';
+import TrocoScreen from './src/screens/venda/TrocoScreen';
 
 import produtosIniciais from './src/mocks/produtos';
 
@@ -28,6 +29,10 @@ export default function App() {
   });
 
   const [carrinho, setCarrinho] = useState([]);
+  const [dadosTroco, setDadosTroco] = useState({
+    valorDevido: 8.0,
+    valorEntregue: 10.0,
+  });
 
   function abrirCatalogo() {
     setTelaAtual('catalogo');
@@ -39,6 +44,16 @@ export default function App() {
 
   function abrirCombinacoes() {
     setTelaAtual('combinacoes');
+  }
+
+  function abrirTroco(dados = {}) {
+    if (dados?.valorTotal !== undefined) {
+      setDadosTroco((prev) => ({
+        ...prev,
+        valorDevido: dados.valorTotal,
+      }));
+    }
+    setTelaAtual('troco');
   }
 
   function atualizarFiltros(novosFiltros) {
@@ -155,6 +170,7 @@ export default function App() {
         <GestaoScreen
           onAbrirCatalogo={abrirCatalogo}
           onAbrirMetas={abrirMetas}
+          onAbrirTroco={abrirTroco}
           onVoltarInicio={voltarInicio}
           onNavegar={navegarPara}
         />
@@ -196,6 +212,18 @@ export default function App() {
           carrinho={carrinho}
           onVoltar={() => setTelaAtual('vender')}
           onConfirmarVenda={confirmarVenda}
+          onAbrirTroco={abrirTroco}
+        />
+      )}
+
+      {telaAtual === 'troco' && (
+        <TrocoScreen
+          valorDevido={dadosTroco.valorDevido}
+          valorEntregueInicial={dadosTroco.valorEntregue}
+          onVoltar={() => setTelaAtual('revisarVenda')}
+          onUsarRecebimento={({ valorRecebido }) => {
+            confirmarVenda({ valorTotal: valorRecebido });
+          }}
         />
       )}
 
