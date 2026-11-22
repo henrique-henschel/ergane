@@ -9,10 +9,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import tools.jackson.core.JacksonException;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -72,6 +76,35 @@ public class TratadorDeErros {
     public ProblemDetail integridade(DataIntegrityViolationException ex) {
         return ProblemDetail.forStatusAndDetail(
                 HttpStatus.CONFLICT, "Erro! A operação conflita com dados já existentes.");
+    }
+
+    // Bloqueio otimista (@Version): outra transação alterou o registro antes desta
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ProblemDetail versaoConcorrente(ObjectOptimisticLockingFailureException ex) {
+        return ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT, "Erro! O registro foi alterado por outra operação. Atualize e tente novamente.");
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail jsonInvalido(HttpMessageNotReadableException ex) {
+        ProblemDetail problema = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, "Erro! Corpo da requisição inválido.");
+
+        if (ex.getMostSpecificCause() instanceof JacksonException jackson && !jackson.getPath().isEmpty()) {
+            String campo = jackson.getPath().getLast().getPropertyName();
+            if (campo != null) {
+                problema.setProperty("campos", Map.of(campo, "Erro! Valor em formato inválido."));
+            }
+        }
+        return problema;
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ProblemDetail parametroInvalido(MethodArgumentTypeMismatchException ex) {
+        ProblemDetail problema = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, "Erro! Parâmetro inválido.");
+        problema.setProperty("campos", Map.of(ex.getName(), "Erro! Valor em formato inválido."));
+        return problema;
     }
 
 }

@@ -11,7 +11,7 @@ Adotar o PostgreSQL (versão 17) como o banco de dados relacional oficial do pro
 A aplicação delega garantias críticas de consistência e integridade ao próprio banco:
 
 - Integridade referencial com chaves estrangeiras declaradas com `ON DELETE RESTRICT`, impedindo a deleção em cascata de dados históricos;
-- Restrições `CHECK` a nível de coluna (ex.: `preco >= 0`, `custo >= 0`, `TRIM(nome) <> ''`), garantindo que dados inválidos nunca sejam persistidos;
+- Restrições `CHECK` a nível de coluna (ex.: `preco_venda >= 0`, `custo_unitario >= 0`, `TRIM(nome) <> ''`), garantindo que dados inválidos nunca sejam persistidos;
 - Tipos de dados nativos adequados ao domínio: `NUMERIC(12,2)` para exatidão monetária, `TIMESTAMPTZ` para instantes temporais com fuso horário, e tipo `UUID` nativo com geração via `gen_random_uuid()`;
 - Recursos avançados do PostgreSQL já empregados no schema:
   - Índices únicos baseados em expressões funcionais (ex.: `LOWER(nome)` em categorias e `(LOWER(nome), LOWER(COALESCE(diferenciador, '')))` em produtos);

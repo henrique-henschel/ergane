@@ -33,7 +33,7 @@ public class ContextoContaInterceptor implements HandlerInterceptor {
             throw new ContextoContaNaoSelecionadaException();
         }
         contaService.validarAcesso(usuario.usuarioId(), usuario.contaAtivaId());
-        contextoConta.definirContaAutorizada(usuario.contaAtivaId());
+        contextoConta.definirContaAutorizada(usuario.usuarioId(), usuario.contaAtivaId());
         return true;
     }
 }

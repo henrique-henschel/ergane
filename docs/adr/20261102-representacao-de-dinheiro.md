@@ -10,7 +10,7 @@ Representar todos os valores monetários por meio da classe `BigDecimal` no Java
 
 A política de tratamento financeiro compreende:
 
-- Tipos de dados monetários padronizados: `BigDecimal` na camada de aplicação e `NUMERIC(12, 2)` no schema relacional, com restrições `CHECK` que barram valores negativos (`preco >= 0`, `custo >= 0`);
+- Tipos de dados monetários padronizados: `BigDecimal` na camada de aplicação e `NUMERIC(12, 2)` no schema relacional, com restrições `CHECK` que barram valores negativos (`preco_venda >= 0`, `custo_unitario >= 0`);
 - Rejeição de arredondamento silencioso: na construção e atualização de entidades (ex.: `Produto.java`), a escala é normalizada com `setScale(2, RoundingMode.UNNECESSARY)`, gerando exceção imediata caso um valor com mais de duas casas decimais tente ser atribuído;
 - Validação declarativa de entrada via Bean Validation nos DTOs de Request (ex.: `ProdutoRequest`), usando `@Digits(integer = 10, fraction = 2)` e `@DecimalMin(value = "0.00")` para barrar entradas sintaticamente inválidas antes de chegarem ao serviço;
 - Distinção semântica de valores ausentes (RT04): campos opcionais como custo ou saldo utilizam tipos envelopados e preservam `null` quando não informados, impedindo que métricas financeiras considerem produtos com custo zero (o que falsearia margens de lucro);

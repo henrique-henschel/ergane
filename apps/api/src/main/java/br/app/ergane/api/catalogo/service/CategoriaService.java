@@ -5,6 +5,7 @@ import br.app.ergane.api.catalogo.repository.CategoriaRepository;
 import br.app.ergane.api.compartilhado.exception.RecursoNaoEncontradoException;
 import br.app.ergane.api.compartilhado.exception.RegraNegocioException;
 import br.app.ergane.api.compartilhado.security.ContextoConta;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,8 +61,18 @@ public class CategoriaService {
     @Transactional
     public void excluir(UUID id) {
         Categoria categoria = buscar(id);
-        // TODO UC03: bloquear a exclusao se houver produtos vinculados
-        categoriaRepository.delete(categoria);
+
+        try {
+            categoriaRepository.delete(categoria);
+            categoriaRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new RegraNegocioException("Erro! A categoria possui produtos vinculados (inclusive arquivados) e não pode ser excluída. Renomeie-a se precisar reaproveitá-la.");
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existe(UUID id) {
+        return categoriaRepository.existsByContaIdAndId(contextoConta.getContaId(), id);
     }
 
 }
