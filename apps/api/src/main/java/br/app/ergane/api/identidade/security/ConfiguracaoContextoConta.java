@@ -17,6 +17,7 @@ public class ConfiguracaoContextoConta implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(interceptor).addPathPatterns(
                 "/api/categorias", "/api/categorias/**",
-                "/api/produtos", "/api/produtos/**");
+                "/api/produtos", "/api/produtos/**",
+                "/api/vendas", "/api/vendas/**");
     }
 }

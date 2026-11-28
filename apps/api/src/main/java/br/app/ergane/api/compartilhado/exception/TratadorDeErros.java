@@ -61,7 +61,8 @@ public class TratadorDeErros {
         Map<String, String> campos = ex.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap(
                         FieldError::getField,
-                        FieldError::getDefaultMessage,
+                        // Falha de conversão (ex.: ?de=abc) traz mensagem técnica do Spring
+                        erro -> erro.isBindingFailure() ? "Erro! Valor em formato inválido." : erro.getDefaultMessage(),
                         (primeira, segunda) -> primeira
                 ));
 

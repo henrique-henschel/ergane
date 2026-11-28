@@ -1,0 +1,2261 @@
+{
+  "info": {
+    "_postman_id": "6843411f-daa8-42c9-beb5-22af3b526d75",
+    "name": "Ergane API",
+    "description": "Endpoints da API do Ergane com testes de cada cenário. Rode as pastas em ordem (0 → 4); antes da pasta 3, rode o seed de vendas (docs/api/README.md). Documentação completa no Swagger: {{baseUrl}}/swagger-ui.html (perfil local).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "0. Sessão (UC01)",
+      "description": "Cria um usuário com conta nova (email único a cada execução), entra e seleciona a conta. Rode esta pasta antes das demais: os tokens e IDs ficam salvos no environment.",
+      "item": [
+        {
+          "name": "Cadastrar usuário e conta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cadastros",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cadastros"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Pessoa de Teste\",\n  \"email\": \"{{email}}\",\n  \"senha\": \"{{senha}}\",\n  \"nomeConta\": \"{{nomeConta}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Email novo a cada execução, para sempre começar com uma conta vazia",
+                  "pm.environment.set(\"email\", \"teste.\" + Date.now() + \"@ergane.local\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"retorna usuário e conta\", () => {",
+                  "    pm.expect(corpo.usuarioId).to.be.a(\"string\");",
+                  "    pm.expect(corpo.conta.contaId).to.be.a(\"string\");",
+                  "    pm.expect(corpo.conta.papel).to.eql(\"PROPRIETARIO\");",
+                  "});",
+                  "pm.environment.set(\"usuarioId\", corpo.usuarioId);",
+                  "pm.environment.set(\"contaId\", corpo.conta.contaId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Entrar (login)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessoes"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"senha\": \"{{senha}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"retorna tokens\", () => {",
+                  "    pm.expect(corpo.accessToken).to.be.a(\"string\");",
+                  "    pm.expect(corpo.refreshToken).to.be.a(\"string\");",
+                  "});",
+                  "pm.environment.set(\"accessToken\", corpo.accessToken);",
+                  "pm.environment.set(\"refreshToken\", corpo.refreshToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sem token → 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sem conta selecionada → 409",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"mensagem: Selecione um negócio\", () => pm.expect(pm.response.json().detail).to.include(\"Selecione um negócio\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Selecionar conta",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessoes/atual/conta",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessoes",
+                "atual",
+                "conta"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contaId\": \"{{contaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"conta selecionada\", () => pm.expect(pm.response.json().contaId).to.eql(pm.environment.get(\"contaId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar sessões",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessoes"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"sessão atual na lista\", () => pm.expect(pm.response.json().some(s => s.atual)).to.be.true);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1. Categorias (UC07)",
+      "description": "Requer a pasta 0.",
+      "item": [
+        {
+          "name": "Criar categoria",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/categorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "categorias"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Salgados\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"Location aponta para a categoria\", () => pm.expect(pm.response.headers.get(\"Location\")).to.include(corpo.id));",
+                  "pm.test(\"versão inicial 0\", () => pm.expect(corpo.versao).to.eql(0));",
+                  "pm.environment.set(\"categoriaId\", corpo.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar categorias",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "categorias"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"contém a categoria criada\", () => pm.expect(pm.response.json().map(c => c.id)).to.include(pm.environment.get(\"categoriaId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar categoria",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categorias/{{categoriaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "categorias",
+                "{{categoriaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"nome\", () => pm.expect(pm.response.json().nome).to.eql(\"Salgados\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Renomear categoria",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/categorias/{{categoriaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "categorias",
+                "{{categoriaId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Salgados e Doces\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"novo nome e versão 1\", () => {",
+                  "    pm.expect(pm.response.json().nome).to.eql(\"Salgados e Doces\");",
+                  "    pm.expect(pm.response.json().versao).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Nome repetido (ignora maiúsculas) → 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/categorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "categorias"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"salgados e doces\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"mensagem: Já existe uma categoria com este nome\", () => pm.expect(pm.response.json().detail).to.include(\"Já existe uma categoria com este nome\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Nome vazio → 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/categorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "categorias"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"  \"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"campo nome com mensagem de erro\", () => {",
+                  "    const campos = pm.response.json().campos || {};",
+                  "    pm.expect(campos).to.have.property(\"nome\");",
+                  "    pm.expect(campos[\"nome\"]).to.match(/^Erro!/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Criar categoria temporária",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/categorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "categorias"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Temporária\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+                  "pm.environment.set(\"categoriaTemporariaId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir categoria sem produtos → 204",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categorias/{{categoriaTemporariaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "categorias",
+                "{{categoriaTemporariaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar categoria excluída → 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categorias/{{categoriaTemporariaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "categorias",
+                "{{categoriaTemporariaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Produtos (UC03–UC06)",
+      "description": "Requer as pastas 0 e 1.",
+      "item": [
+        {
+          "name": "Cadastrar produto mínimo (UC03 CA1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Pastel\",\n  \"precoVenda\": 8\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+                  "const p = pm.response.json();",
+                  "pm.test(\"Location aponta para o produto\", () => pm.expect(pm.response.headers.get(\"Location\")).to.include(p.id));",
+                  "pm.test(\"custo ausente continua nulo, não zero (CA3)\", () => pm.expect(p.custoUnitario).to.be.null);",
+                  "pm.test(\"versão 0 e autor = usuário logado\", () => {",
+                  "    pm.expect(p.versao).to.eql(0);",
+                  "    pm.expect(p.criadoPorId).to.eql(pm.environment.get(\"usuarioId\"));",
+                  "});",
+                  "pm.environment.set(\"produtoId\", p.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cadastrar com categoria e diferenciador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Camiseta\",\n  \"diferenciador\": \"P\",\n  \"descricao\": \"Algodão\",\n  \"precoVenda\": 30,\n  \"custoUnitario\": 12.5,\n  \"categoriaId\": \"{{categoriaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"vinculado à categoria\", () => pm.expect(pm.response.json().categoriaId).to.eql(pm.environment.get(\"categoriaId\")));",
+                  "pm.environment.set(\"produtoCamisetaPId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mesmo nome, outro diferenciador (UC03 CA2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Camiseta\",\n  \"diferenciador\": \"G\",\n  \"precoVenda\": 32\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Nome repetido sem diferenciador → 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"pastel\",\n  \"precoVenda\": 9\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"mensagem: Informe um diferenciador\", () => pm.expect(pm.response.json().detail).to.include(\"Informe um diferenciador\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Nome e diferenciador repetidos → 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"CAMISETA\",\n  \"diferenciador\": \" p \",\n  \"precoVenda\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"mensagem: nome e diferenciador\", () => pm.expect(pm.response.json().detail).to.include(\"nome e diferenciador\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Preço com 3 casas → 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"X\",\n  \"precoVenda\": 4.555\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"campo precoVenda com mensagem de erro\", () => {",
+                  "    const campos = pm.response.json().campos || {};",
+                  "    pm.expect(campos).to.have.property(\"precoVenda\");",
+                  "    pm.expect(campos[\"precoVenda\"]).to.match(/^Erro!/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Preço negativo → 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"X\",\n  \"precoVenda\": -1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"campo precoVenda com mensagem de erro\", () => {",
+                  "    const campos = pm.response.json().campos || {};",
+                  "    pm.expect(campos).to.have.property(\"precoVenda\");",
+                  "    pm.expect(campos[\"precoVenda\"]).to.match(/^Erro!/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Preço em formato inválido → 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"X\",\n  \"precoVenda\": \"abc\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"campo precoVenda com mensagem de erro\", () => {",
+                  "    const campos = pm.response.json().campos || {};",
+                  "    pm.expect(campos).to.have.property(\"precoVenda\");",
+                  "    pm.expect(campos[\"precoVenda\"]).to.eql(\"Erro! Valor em formato inválido.\");",
+                  "});",
+                  "pm.test(\"detail\", () => pm.expect(pm.response.json().detail).to.eql(\"Erro! Corpo da requisição inválido.\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Categoria inexistente → 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Coxinha\",\n  \"precoVenda\": 6,\n  \"categoriaId\": \"00000000-0000-0000-0000-000000000999\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"mensagem: A categoria informada não existe\", () => pm.expect(pm.response.json().detail).to.include(\"A categoria informada não existe\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar produtos (UC04)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"3 produtos ativos, ordenados por nome\", () => {",
+                  "    const nomes = pm.response.json().map(p => p.nome + (p.diferenciador ? \" \" + p.diferenciador : \"\"));",
+                  "    pm.expect(nomes).to.eql([\"Camiseta G\", \"Camiseta P\", \"Pastel\"]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar por nome",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos?nome=CAMI",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ],
+              "query": [
+                {
+                  "key": "nome",
+                  "value": "CAMI"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"2 camisetas\", () => pm.expect(pm.response.json().length).to.eql(2));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtrar por categoria",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos?categoriaId={{categoriaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ],
+              "query": [
+                {
+                  "key": "categoriaId",
+                  "value": "{{categoriaId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"só a camiseta P\", () => pm.expect(pm.response.json().map(p => p.id)).to.eql([pm.environment.get(\"produtoCamisetaPId\")]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtrar sem categoria (UC04 CA2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos?semCategoria=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ],
+              "query": [
+                {
+                  "key": "semCategoria",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"todos sem categoria\", () => {",
+                  "    const lista = pm.response.json();",
+                  "    pm.expect(lista.length).to.eql(2);",
+                  "    pm.expect(lista.every(p => p.categoriaId === null)).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Parâmetro em formato inválido → 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos?categoriaId=abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ],
+              "query": [
+                {
+                  "key": "categoriaId",
+                  "value": "abc"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"campo categoriaId com mensagem de erro\", () => {",
+                  "    const campos = pm.response.json().campos || {};",
+                  "    pm.expect(campos).to.have.property(\"categoriaId\");",
+                  "    pm.expect(campos[\"categoriaId\"]).to.eql(\"Erro! Valor em formato inválido.\");",
+                  "});",
+                  "pm.test(\"detail\", () => pm.expect(pm.response.json().detail).to.eql(\"Erro! Parâmetro inválido.\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar produto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos/{{produtoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos",
+                "{{produtoId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"mesmo id\", () => pm.expect(pm.response.json().id).to.eql(pm.environment.get(\"produtoId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar produto (UC05)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos/{{produtoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos",
+                "{{produtoId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Pastel\",\n  \"diferenciador\": \"Carne\",\n  \"precoVenda\": 4.5,\n  \"custoUnitario\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "const p = pm.response.json();",
+                  "pm.test(\"preço 4.50 e versão 1\", () => {",
+                  "    pm.expect(Number(p.precoVenda)).to.eql(4.5);",
+                  "    pm.expect(p.versao).to.eql(1);",
+                  "});",
+                  "pm.test(\"autor não muda\", () => pm.expect(p.criadoPorId).to.eql(pm.environment.get(\"usuarioId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Arquivar produto (UC06)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos/{{produtoCamisetaPId}}/arquivar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos",
+                "{{produtoCamisetaPId}}",
+                "arquivar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"arquivado\", () => pm.expect(pm.response.json().arquivado).to.be.true);",
+                  "pm.environment.set(\"arquivadoEm\", pm.response.json().arquivadoEm);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Arquivar de novo não muda nada (UC06 CA3)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos/{{produtoCamisetaPId}}/arquivar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos",
+                "{{produtoCamisetaPId}}",
+                "arquivar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"mesmo arquivadoEm\", () => pm.expect(pm.response.json().arquivadoEm).to.eql(pm.environment.get(\"arquivadoEm\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar produto arquivado → 409",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos/{{produtoCamisetaPId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos",
+                "{{produtoCamisetaPId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Camiseta\",\n  \"diferenciador\": \"P\",\n  \"precoVenda\": 31\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"mensagem: arquivado não pode ser editado\", () => pm.expect(pm.response.json().detail).to.include(\"arquivado não pode ser editado\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listagem padrão esconde arquivados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"camiseta P fora da lista\", () => pm.expect(pm.response.json().map(p => p.id)).to.not.include(pm.environment.get(\"produtoCamisetaPId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Incluir arquivados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos?incluirArquivados=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ],
+              "query": [
+                {
+                  "key": "incluirArquivados",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"camiseta P na lista\", () => pm.expect(pm.response.json().map(p => p.id)).to.include(pm.environment.get(\"produtoCamisetaPId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir categoria em uso → 409 (UC07)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categorias/{{categoriaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "categorias",
+                "{{categoriaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"mensagem: possui produtos vinculados\", () => pm.expect(pm.response.json().detail).to.include(\"possui produtos vinculados\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Vendas (UC11)",
+      "description": "Requer as pastas 0 e 2 e, depois delas, o seed docs/api/seed-vendas.sql com o email do environment (o registro de vendas, UC09, ainda não existe na API). Veja docs/api/README.md.",
+      "item": [
+        {
+          "name": "Listar vendas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"3 vendas do seed (rode docs/api/seed-vendas.sql se vier 0)\", () => pm.expect(corpo.totalRegistros).to.eql(3));",
+                  "pm.test(\"ordem: dia 20 com hora, dia 20 sem hora, dia 10\", () => {",
+                  "    pm.expect(corpo.registros.map(v => v.dataOcorrencia)).to.eql([\"2026-11-20\", \"2026-11-20\", \"2026-11-10\"]);",
+                  "    pm.expect(corpo.registros[0].horaOcorrencia).to.not.be.null;",
+                  "    pm.expect(corpo.registros[1].horaOcorrencia).to.be.null;",
+                  "});",
+                  "pm.test(\"detalhada indica se há itens\", () => pm.expect(corpo.registros.map(v => v.detalhada)).to.eql([true, false, false]));",
+                  "pm.test(\"cobertura desconhecida\", () => pm.expect(corpo.cobertura).to.eql({ completa: null, periodoDisponivelDe: null, periodoDisponivelAte: null, atualizadoEm: null }));",
+                  "if (corpo.registros.length === 3) {",
+                  "    pm.environment.set(\"vendaDetalhadaId\", corpo.registros[0].id);",
+                  "    pm.environment.set(\"vendaAgregadaId\", corpo.registros[1].id);",
+                  "    pm.environment.set(\"vendaCanceladaId\", corpo.registros[2].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Paginação",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas?pagina=1&tamanho=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas"
+              ],
+              "query": [
+                {
+                  "key": "pagina",
+                  "value": "1"
+                },
+                {
+                  "key": "tamanho",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"segunda página com 1 registro\", () => {",
+                  "    pm.expect(corpo.registros.map(v => v.id)).to.eql([pm.environment.get(\"vendaAgregadaId\")]);",
+                  "    pm.expect(corpo.totalPaginas).to.eql(3);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Página além do fim",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas?pagina=99",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas"
+              ],
+              "query": [
+                {
+                  "key": "pagina",
+                  "value": "99"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"lista vazia, total mantido\", () => {",
+                  "    pm.expect(pm.response.json().registros).to.be.empty;",
+                  "    pm.expect(pm.response.json().totalRegistros).to.eql(3);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tamanho acima do limite → 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas?tamanho=101",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas"
+              ],
+              "query": [
+                {
+                  "key": "tamanho",
+                  "value": "101"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"campo tamanho com mensagem de erro\", () => {",
+                  "    const campos = pm.response.json().campos || {};",
+                  "    pm.expect(campos).to.have.property(\"tamanho\");",
+                  "    pm.expect(campos[\"tamanho\"]).to.eql(\"Erro! O tamanho máximo é 100.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtrar por período",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas?de=2026-11-20&ate=2026-11-20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas"
+              ],
+              "query": [
+                {
+                  "key": "de",
+                  "value": "2026-11-20"
+                },
+                {
+                  "key": "ate",
+                  "value": "2026-11-20"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"só as do dia 20 (limites inclusivos)\", () => pm.expect(pm.response.json().totalRegistros).to.eql(2));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Período invertido → 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas?de=2026-11-21&ate=2026-11-20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas"
+              ],
+              "query": [
+                {
+                  "key": "de",
+                  "value": "2026-11-21"
+                },
+                {
+                  "key": "ate",
+                  "value": "2026-11-20"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"campo periodoValido com mensagem de erro\", () => {",
+                  "    const campos = pm.response.json().campos || {};",
+                  "    pm.expect(campos).to.have.property(\"periodoValido\");",
+                  "    pm.expect(campos[\"periodoValido\"]).to.eql(\"Erro! A data inicial deve ser anterior ou igual à data final.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Data em formato inválido → 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas?de=20/11/2026",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas"
+              ],
+              "query": [
+                {
+                  "key": "de",
+                  "value": "20/11/2026"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"campo de com mensagem de erro\", () => {",
+                  "    const campos = pm.response.json().campos || {};",
+                  "    pm.expect(campos).to.have.property(\"de\");",
+                  "    pm.expect(campos[\"de\"]).to.eql(\"Erro! Valor em formato inválido.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtrar por produto (UC11 CA2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas?produtoId={{produtoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas"
+              ],
+              "query": [
+                {
+                  "key": "produtoId",
+                  "value": "{{produtoId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"só a venda detalhada, sem o resumo agregado\", () => pm.expect(pm.response.json().registros.map(v => v.id)).to.eql([pm.environment.get(\"vendaDetalhadaId\")]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtrar por situação",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas?situacao=CANCELADA",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas"
+              ],
+              "query": [
+                {
+                  "key": "situacao",
+                  "value": "CANCELADA"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"só a cancelada\", () => pm.expect(pm.response.json().registros.map(v => v.id)).to.eql([pm.environment.get(\"vendaCanceladaId\")]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Situação inválida → 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas?situacao=PAGA",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas"
+              ],
+              "query": [
+                {
+                  "key": "situacao",
+                  "value": "PAGA"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"campo situacao com mensagem de erro\", () => {",
+                  "    const campos = pm.response.json().campos || {};",
+                  "    pm.expect(campos).to.have.property(\"situacao\");",
+                  "    pm.expect(campos[\"situacao\"]).to.eql(\"Erro! Situação deve ser CONFIRMADA, CANCELADA ou DESFEITA.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtrar por forma de pagamento",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas?formaPagamentoInformada=PIX",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas"
+              ],
+              "query": [
+                {
+                  "key": "formaPagamentoInformada",
+                  "value": "PIX"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"só a venda em PIX\", () => pm.expect(pm.response.json().registros.map(v => v.id)).to.eql([pm.environment.get(\"vendaDetalhadaId\")]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtrar por origem",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas?origem=balcao",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas"
+              ],
+              "query": [
+                {
+                  "key": "origem",
+                  "value": "balcao"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"detalhada e cancelada\", () => pm.expect(pm.response.json().registros.map(v => v.id)).to.eql([pm.environment.get(\"vendaDetalhadaId\"), pm.environment.get(\"vendaCanceladaId\")]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Detalhar venda com itens",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas/{{vendaDetalhadaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas",
+                "{{vendaDetalhadaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "const v = pm.response.json();",
+                  "pm.test(\"itens detalhados com snapshot\", () => {",
+                  "    pm.expect(v.itensDetalhados).to.be.true;",
+                  "    pm.expect(v.itens.length).to.eql(1);",
+                  "    pm.expect(v.itens[0].produtoId).to.eql(pm.environment.get(\"produtoId\"));",
+                  "    pm.expect(v.itens[0].nome).to.eql(\"Pastel\");",
+                  "});",
+                  "pm.test(\"forma informada PIX\", () => pm.expect(v.formaPagamentoInformada).to.eql(\"PIX\"));",
+                  "pm.environment.set(\"precoNaVenda\", v.itens[0].precoUnitario);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mudar preço do produto (prepara UC11 CA1)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos/{{produtoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos",
+                "{{produtoId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Pastel de Forno\",\n  \"diferenciador\": \"Carne\",\n  \"precoVenda\": 5,\n  \"custoUnitario\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Venda conserva nome e preço antigos (UC11 CA1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas/{{vendaDetalhadaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas",
+                "{{vendaDetalhadaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "const item = pm.response.json().itens[0];",
+                  "pm.test(\"nome e preço do momento da venda\", () => {",
+                  "    pm.expect(item.nome).to.eql(\"Pastel\");",
+                  "    pm.expect(Number(item.precoUnitario)).to.eql(Number(pm.environment.get(\"precoNaVenda\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Detalhar resumo agregado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas/{{vendaAgregadaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas",
+                "{{vendaAgregadaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "const v = pm.response.json();",
+                  "pm.test(\"sem itens e sem forma informada\", () => {",
+                  "    pm.expect(v.itensDetalhados).to.be.false;",
+                  "    pm.expect(v.itens).to.be.empty;",
+                  "    pm.expect(v.formaPagamentoInformada).to.be.null;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Venda inexistente → 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vendas/00000000-0000-0000-0000-000000000999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vendas",
+                "00000000-0000-0000-0000-000000000999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"mensagem: Venda não encontrada\", () => pm.expect(pm.response.json().detail).to.include(\"Venda não encontrada\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Sessão — renovar e encerrar (UC01)",
+      "description": "Rode por último: encerra a sessão do environment.",
+      "item": [
+        {
+          "name": "Renovar sessão",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessoes/renovacoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessoes",
+                "renovacoes"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"novos tokens\", () => pm.expect(corpo.refreshToken).to.not.eql(pm.environment.get(\"refreshToken\")));",
+                  "pm.environment.set(\"accessToken\", corpo.accessToken);",
+                  "pm.environment.set(\"refreshToken\", corpo.refreshToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Encerrar sessão atual",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessoes/atual/revogar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sessoes",
+                "atual",
+                "revogar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"revogada\", () => pm.expect(pm.response.json().revogadaEm).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Token encerrado → 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produtos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "produtos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

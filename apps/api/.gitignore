@@ -32,3 +32,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Chaves JWT locais (scripts/rodar-local.sh) ###
+.jwt-local/

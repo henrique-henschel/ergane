@@ -78,6 +78,13 @@ Ao subir, o Flyway cria ou atualiza as tabelas sozinho. Não é preciso rodar ne
 
 Abrindo http://localhost:8080 no navegador aparece uma página de erro 404 ("Whitelabel Error Page"). Isso é normal: significa que a API está respondendo, só não existe nada na raiz.
 
+### 4. Login, documentação e testes manuais
+
+Para o login (JWT) funcionar localmente, suba a API com `./scripts/rodar-local.sh` (Git Bash no Windows) em vez do `mvnw` direto. Com a API no ar:
+
+- Documentação (Swagger UI): http://localhost:8080/swagger-ui.html
+- Collection do Postman com testes de cada cenário: veja [docs/api/README.md](../../docs/api/README.md)
+
 ## Parando
 
 | Para parar | Comando |
